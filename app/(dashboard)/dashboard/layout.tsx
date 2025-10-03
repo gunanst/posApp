@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex flex-col flex-1 min-h-screen">
 
                 {/* Header */}
-                <header className="flex items-center justify-between bg-white dark:bg-gray-900 border-b shadow-sm px-4 py-3 md:px-6">
+                <header className="flex items-center justify-between bg-white dark:bg-gray-900 border-b px-6 py-4 md:px-6">
                     <div className="flex items-center space-x-3">
                         <label htmlFor="sidebar-toggle" className="md:hidden cursor-pointer">
                             <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">

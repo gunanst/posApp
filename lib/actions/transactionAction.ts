@@ -111,3 +111,35 @@ export async function getTransactions() {
         orderBy: { createdAt: 'desc' },
     });
 }
+
+
+// Tambahkan fungsi cancelTransaction di transactionAction.ts
+export async function cancelTransaction(transactionId: number) {
+  const transaction = await prisma.transaction.findUnique({
+    where: { id: transactionId },
+    include: { items: true },
+  });
+
+  if (!transaction) throw new Error("Transaksi tidak ditemukan");
+
+  // Buka transaksi database
+  await prisma.$transaction(async (tx) => {
+    // 1. Hapus semua item transaksi
+    await tx.transactionItem.deleteMany({
+      where: { transactionId },
+    });
+
+    // 2. Hapus transaksi utama
+    await tx.transaction.delete({
+      where: { id: transactionId },
+    });
+
+    // 3. Kembalikan stok produk
+    for (const item of transaction.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stok: { increment: item.quantity } },
+      });
+    }
+  });
+}

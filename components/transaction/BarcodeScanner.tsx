@@ -48,10 +48,9 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
 
         if (capabilities && "torch" in capabilities) {
           try {
-            // aman tanpa error TS
-            const advancedConstraints: any[] = [{ torch: torchEnabled }];
+            const advancedConstraints: Array<{ [key: string]: unknown }> = [{ torch: torchEnabled }];
             if (capabilities.focusMode?.includes("continuous")) {
-              advancedConstraints[0]["focusMode"] = "continuous"; // auto fokus
+              advancedConstraints[0]["focusMode"] = "continuous";
             }
             await track.applyConstraints({ advanced: advancedConstraints });
           } catch {
@@ -59,13 +58,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           }
         }
 
-        const hasBarcodeDetector = "BarcodeDetector" in window;
-        if (!hasBarcodeDetector) {
-          setError("Browser tidak mendukung BarcodeDetector API");
-          return;
-        }
-
-        // @ts-expect-error BarcodeDetector belum dideklarasi global
+        // @ts-expect-error BarcodeDetector belum ada di TS
         const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
@@ -134,7 +127,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      // @ts-expect-error BarcodeDetector belum dideklarasi global
+      // @ts-expect-error BarcodeDetector belum ada di TS
       const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
         formats: [
           "code_128", "ean_13", "ean_8", "upc_a", "upc_e",

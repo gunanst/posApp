@@ -4,6 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, Repeat } from "lucide-react";
 
+// --- Extend global window interface untuk BarcodeDetector ---
+declare global {
+  interface Window {
+    BarcodeDetector?: {
+      new(options?: { formats: string[] }): BarcodeDetector;
+    };
+  }
+  interface BarcodeDetectionResult {
+    rawValue: string;
+  }
+  interface BarcodeDetector {
+    detect(image: CanvasImageSource): Promise<BarcodeDetectionResult[]>;
+  }
+}
+
 export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
   onNoCamera?: () => void;
@@ -44,7 +59,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         setCameraAvailable(true);
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { focusMode?: string[] };
+        const capabilities = track.getCapabilities() as MediaTrackCapabilities & { focusMode?: string[] };
 
         if (capabilities && "torch" in capabilities) {
           try {
@@ -58,8 +73,12 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           }
         }
 
-        // @ts-expect-error BarcodeDetector API global belum ada di TS, needed for detection
-        const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
+        if (!window.BarcodeDetector) {
+          setError("Browser tidak mendukung BarcodeDetector API");
+          return;
+        }
+
+        const barcodeDetector = new window.BarcodeDetector({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
             "code_39", "codabar", "itf", "qr_code"
@@ -125,8 +144,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      // @ts-expect-error BarcodeDetector API global belum ada di TS, needed for detection
-      const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
+      const barcodeDetector = new window.BarcodeDetector!({
         formats: [
           "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
           "code_39", "codabar", "itf", "qr_code"
@@ -141,8 +159,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         } else {
           setError("Barcode tidak terbaca dari gambar.");
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
         setError("Gagal mendeteksi barcode dari gambar.");
       }
     };

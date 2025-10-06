@@ -4,6 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, Repeat } from "lucide-react";
 
+// Deklarasi tipe untuk BarcodeDetector API
+declare global {
+  interface Window {
+    BarcodeDetector?: {
+      new(options?: { formats: string[] }): {
+        detect: (image: ImageBitmapSource) => Promise<Array<{
+          rawValue: string;
+          boundingBox: DOMRectReadOnly;
+          format: string;
+          cornerPoints: Array<{ x: number; y: number }>;
+        }>>;
+      };
+    };
+  }
+}
+
+interface BarcodeDetectorResult {
+  rawValue: string;
+  boundingBox: DOMRectReadOnly;
+  format: string;
+  cornerPoints: Array<{ x: number; y: number }>;
+}
+
+interface MediaTrackCapabilitiesWithTorch extends MediaTrackCapabilities {
+  torch?: boolean;
+  focusMode?: string[];
+}
+
 export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
   onNoCamera?: () => void;
@@ -44,22 +72,28 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         setCameraAvailable(true);
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { focusMode?: string[] };
+        const capabilities = track.getCapabilities() as MediaTrackCapabilitiesWithTorch;
 
         if (capabilities && "torch" in capabilities) {
           try {
-            const advancedConstraints: Array<{ [key: string]: unknown }> = [{ torch: torchEnabled }];
-            if (capabilities.focusMode?.includes("continuous")) {
-              advancedConstraints[0]["focusMode"] = "continuous";
-            }
+            const advancedConstraints: MediaTrackConstraintSet[] = [{
+              torch: torchEnabled,
+              ...(capabilities.focusMode?.includes("continuous") && { focusMode: "continuous" })
+            }];
+
             await track.applyConstraints({ advanced: advancedConstraints });
           } catch {
             console.warn("Torch atau auto fokus tidak bisa diaktifkan pada perangkat ini.");
           }
         }
 
-        // @ts-expect-error BarcodeDetector belum ada di TS
-        const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
+        const hasBarcodeDetector = window.BarcodeDetector !== undefined;
+        if (!hasBarcodeDetector) {
+          setError("Browser tidak mendukung BarcodeDetector API");
+          return;
+        }
+
+        const barcodeDetector = new window.BarcodeDetector!({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
             "code_39", "codabar", "itf", "qr_code"
@@ -78,10 +112,10 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           try {
-            const barcodes = await barcodeDetector.detect(canvas);
+            const barcodes = await barcodeDetector.detect(canvas) as BarcodeDetectorResult[];
             if (barcodes.length > 0 && barcodes[0].rawValue) {
               scanning = false;
-              clearInterval(scanInterval!);
+              if (scanInterval) clearInterval(scanInterval);
 
               if (navigator.vibrate) navigator.vibrate(200);
 
@@ -127,8 +161,12 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      // @ts-expect-error BarcodeDetector belum ada di TS
-      const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
+      if (!window.BarcodeDetector) {
+        setError("Browser tidak mendukung BarcodeDetector API");
+        return;
+      }
+
+      const barcodeDetector = new window.BarcodeDetector({
         formats: [
           "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
           "code_39", "codabar", "itf", "qr_code"
@@ -136,7 +174,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       });
 
       try {
-        const barcodes = await barcodeDetector.detect(canvas);
+        const barcodes = await barcodeDetector.detect(canvas) as BarcodeDetectorResult[];
         if (barcodes.length > 0 && barcodes[0].rawValue) {
           if (navigator.vibrate) navigator.vibrate(200);
           onDetected(barcodes[0].rawValue);

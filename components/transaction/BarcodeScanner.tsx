@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,6 @@ export type BarcodeScannerProps = {
   onNoCamera?: () => void;
 };
 
-declare global {
-  interface BarcodeDetectionResult {
-    rawValue: string;
-  }
-
-  interface BarcodeDetector {
-    detect(image: CanvasImageSource): Promise<BarcodeDetectionResult[]>;
-  }
-
-  interface Window {
-    BarcodeDetector?: {
-      new(options?: { formats: string[] }): BarcodeDetector;
-    };
-  }
-}
-
 export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -32,7 +16,6 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
-  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -42,9 +25,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
     const initCamera = async () => {
       try {
         setLoading(true);
-        const constraints: MediaStreamConstraints = {
-          video: { facingMode },
-        };
+        const constraints: MediaStreamConstraints = { video: { facingMode: { ideal: "environment" } } };
 
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         const video = videoRef.current;
@@ -59,26 +40,24 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         const track = stream.getVideoTracks()[0];
         const capabilities = track.getCapabilities?.();
 
-        // // Torch & focusMode aman untuk TS
-        // const advancedConstraints: Array<{ torch?: boolean; focusMode?: string }> = [{ torch: torchEnabled }];
-        // if (capabilities && capabilities.focusMode?.includes("continuous")) {
-        //   advancedConstraints[0].focusMode = "continuous";
-        // }
+        // Torch support
+        if (capabilities && "torch" in capabilities) {
+          try {
+            await track.applyConstraints({ advanced: [{ torch: torchEnabled }] });
+          } catch {
+            console.warn("Torch tidak bisa diaktifkan pada perangkat ini.");
+          }
+        }
 
-        // if (advancedConstraints.length > 0) {
-        //   await track.applyConstraints({ advanced: advancedConstraints });
-        // }
-
-        // BarcodeDetector
-        if (!window.BarcodeDetector) {
+        // BarcodeDetector support
+        if (!("BarcodeDetector" in window)) {
           setError("Browser tidak mendukung BarcodeDetector API");
           return;
         }
+
+        // @ts-expect-error: BarcodeDetector belum dideklarasi global oleh TS
         const barcodeDetector = new window.BarcodeDetector({
-          formats: [
-            "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
-            "code_39", "codabar", "itf", "qr_code"
-          ],
+          formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39", "codabar", "itf", "qr_code"],
         });
 
         const canvas = document.createElement("canvas");
@@ -105,7 +84,6 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
             console.warn("Barcode detection error:", err);
           }
         }, 400);
-
       } catch (err) {
         console.error("Camera error:", err);
         setError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
@@ -120,44 +98,46 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
     return () => {
       scanning = false;
       if (scanInterval) clearInterval(scanInterval);
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
+      if (stream) stream.getTracks().forEach((t) => t.stop());
       setActive(false);
     };
-  }, [torchEnabled, facingMode, onDetected, onNoCamera]);
+  }, [onDetected, onNoCamera, torchEnabled]);
 
-  const toggleTorch = () => setTorchEnabled(prev => !prev);
-  const switchCamera = () => setFacingMode(prev => prev === "environment" ? "user" : "environment");
+  const toggleTorch = () => setTorchEnabled((prev) => !prev);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const img = new Image();
-      img.src = reader.result as string;
-      img.onload = async () => {
-        if (!window.BarcodeDetector) return;
-        const barcodeDetector = new window.BarcodeDetector({
-          formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39", "codabar", "itf", "qr_code"],
-        });
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0);
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = async () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // @ts-expect-error: BarcodeDetector global
+      const barcodeDetector = new window.BarcodeDetector({
+        formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39", "codabar", "itf", "qr_code"],
+      });
+
+      try {
         const barcodes = await barcodeDetector.detect(canvas);
-        if (barcodes.length > 0) {
+        if (barcodes.length > 0 && barcodes[0].rawValue) {
+          if (navigator.vibrate) navigator.vibrate(200);
           onDetected(barcodes[0].rawValue);
         } else {
-          setError("Tidak ada barcode ditemukan pada gambar.");
+          alert("Barcode tidak terdeteksi pada gambar");
         }
-      };
+      } catch (err) {
+        console.error(err);
+        alert("Error membaca barcode");
+      }
     };
-    reader.readAsDataURL(file);
   };
 
   return (
@@ -170,8 +150,22 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       )}
 
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-600/80 text-white text-center p-4 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-600/80 text-white text-center p-4 z-10">
           <p>{error}</p>
+          <Button
+            size="sm"
+            className="mt-2"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Upload Gambar Barcode
+          </Button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileChange}
+          />
         </div>
       )}
 
@@ -182,23 +176,15 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         playsInline
       />
 
-      <div className="absolute bottom-2 right-2 flex flex-col gap-2">
-        <Button size="sm" variant="secondary" onClick={toggleTorch} disabled={!active}>
+      <div className="absolute bottom-2 right-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={toggleTorch}
+          disabled={!active}
+        >
           {torchEnabled ? "Matikan Flash" : "Nyalakan Flash"}
         </Button>
-        <Button size="sm" variant="secondary" onClick={switchCamera} disabled={!active}>
-          Ganti Kamera
-        </Button>
-        <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-          Upload Barcode
-        </Button>
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileUpload}
-        />
       </div>
     </div>
   );

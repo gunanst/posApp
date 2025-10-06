@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Repeat } from "lucide-react";
 
 export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
@@ -16,6 +16,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
   const [active, setActive] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [cameraAvailable, setCameraAvailable] = useState(true);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -28,7 +29,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         setError(null);
 
         const constraints: MediaStreamConstraints = {
-          video: { facingMode: { ideal: "environment" } },
+          video: { facingMode: { exact: facingMode } },
         };
 
         stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -43,20 +44,16 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         setCameraAvailable(true);
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.() as any; // pakai any supaya TS tidak error
+        const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { focusMode?: string[] };
 
         if (capabilities && "torch" in capabilities) {
           try {
-            const torchConstraint: any = {
-              advanced: [{ torch: torchEnabled }],
-            };
-
-            // auto fokus jika tersedia, tapi pakai any untuk hindari TS error
+            // aman tanpa error TS
+            const advancedConstraints: any[] = [{ torch: torchEnabled }];
             if (capabilities.focusMode?.includes("continuous")) {
-              torchConstraint.advanced[0].focusMode = "continuous";
+              advancedConstraints[0]["focusMode"] = "continuous"; // auto fokus
             }
-
-            await track.applyConstraints(torchConstraint);
+            await track.applyConstraints({ advanced: advancedConstraints });
           } catch {
             console.warn("Torch atau auto fokus tidak bisa diaktifkan pada perangkat ini.");
           }
@@ -68,8 +65,8 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           return;
         }
 
-        // @ts-expect-error
-        const barcodeDetector = new window.BarcodeDetector({
+        // @ts-expect-error BarcodeDetector belum dideklarasi global
+        const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
             "code_39", "codabar", "itf", "qr_code"
@@ -119,9 +116,10 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (stream) stream.getTracks().forEach((t) => t.stop());
       setActive(false);
     };
-  }, [onDetected, onNoCamera, torchEnabled]);
+  }, [onDetected, onNoCamera, torchEnabled, facingMode]);
 
   const toggleTorch = () => setTorchEnabled((prev) => !prev);
+  const switchCamera = () => setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -136,8 +134,8 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      // @ts-expect-error
-      const barcodeDetector = new window.BarcodeDetector({
+      // @ts-expect-error BarcodeDetector belum dideklarasi global
+      const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
         formats: [
           "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
           "code_39", "codabar", "itf", "qr_code"
@@ -203,6 +201,15 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           disabled={!active}
         >
           {torchEnabled ? "Matikan Flash" : "Nyalakan Flash"}
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={switchCamera}
+          disabled={!active}
+        >
+          <Repeat className="w-4 h-4 mr-1" />
+          Switch Kamera
         </Button>
       </div>
     </div>

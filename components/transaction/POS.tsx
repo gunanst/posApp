@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Product, CartItem, TransactionType } from '@/lib/type';
+import { Product, CartItem, TransactionType } from '@/app/types/type';
 import { createTransaction } from '@/lib/actions/transactionAction'; // Pastikan path benar
 import { Button } from '@/components/ui/button';
 import { CartDialog } from './CartDialog';

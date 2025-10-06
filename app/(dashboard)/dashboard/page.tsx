@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
-    const session = await auth();
+    // const session = await auth();
 
-    if (!session) {
-        // Ini seharusnya tidak terjadi karena middleware sudah redirect
-        return <div>Anda harus login.</div>;
-    }
+    // if (!session) {
+    //     // Ini seharusnya tidak terjadi karena middleware sudah redirect
+    //     return <div>Anda harus login.</div>;
+    // }
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold">Dashboard</h1>

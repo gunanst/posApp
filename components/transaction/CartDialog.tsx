@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CartItem, Product } from "@/lib/type";
+import { CartItem, Product } from "@/app/types/type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { XMarkIcon } from '@heroicons/react/24/solid'; // ✅ Ganti XIcon ke XMarkIcon
+import { XMarkIcon, CameraIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import {
     Dialog,
     DialogContent,
@@ -12,7 +12,6 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import BarcodeScanner from "@/components/transaction/BarcodeScanner";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
 type CartDialogProps = {
     open: boolean;
@@ -42,12 +41,27 @@ export function CartDialog({
     const [search, setSearch] = useState("");
     const [showScanner, setShowScanner] = useState(false);
     const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(null);
+    const [scannedCode, setScannedCode] = useState<string | null>(null);
 
     const filteredProducts = products.filter(
         (p) =>
             p.nama.toLowerCase().includes(search.toLowerCase()) ||
             p.barcode?.toLowerCase().includes(search.toLowerCase())
     );
+
+    // ✅ Fungsi getar + beep
+    const feedback = () => {
+        if ("vibrate" in navigator) navigator.vibrate(150);
+        try {
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.connect(ctx.destination);
+            osc.start();
+            setTimeout(() => osc.stop(), 150);
+        } catch { }
+    };
 
     const handleSubmit = () => {
         const code = search.trim().toLowerCase();
@@ -60,6 +74,9 @@ export function CartDialog({
 
         if (found) {
             onAddProduct(found);
+            feedback();
+            setScannedCode(found.nama);
+            setTimeout(() => setScannedCode(null), 2000);
             setSearch("");
             setShowScanner(false);
         } else {
@@ -69,9 +86,7 @@ export function CartDialog({
 
     const toggleScanner = () => {
         if (cameraAvailable === false) {
-            alert(
-                "Kamera tidak tersedia. Silakan gunakan input manual atau upload gambar barcode."
-            );
+            alert("Kamera tidak tersedia. Gunakan input manual atau upload gambar barcode.");
             setShowScanner(false);
             return;
         }
@@ -79,17 +94,15 @@ export function CartDialog({
     };
 
     const removeFromCart = (productId: number) => {
-        setCart(prev => prev.filter(item => item.product.id !== productId));
+        setCart((prev) => prev.filter((item) => item.product.id !== productId));
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="
-          fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-          w-full max-w-[95vw] md:max-w-3xl max-h-[90vh] overflow-y-auto p-4 z-50
-          bg-white rounded-lg shadow-lg
-        "
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                    w-full max-w-[95vw] md:max-w-3xl max-h-[90vh] overflow-y-auto p-4 z-50
+                    bg-white rounded-lg shadow-lg"
             >
                 <DialogHeader>
                     <DialogTitle>Keranjang</DialogTitle>
@@ -101,6 +114,7 @@ export function CartDialog({
                     </div>
                 )}
 
+                {/* 🔍 Input Cari Produk */}
                 <div className="mb-4 relative w-full max-w-full">
                     <form
                         onSubmit={(e) => {
@@ -109,101 +123,117 @@ export function CartDialog({
                         }}
                         className="relative w-full"
                     >
-                        <input
+                        <Input
                             type="text"
                             aria-label="Cari produk atau scan barcode"
                             placeholder="Cari produk atau masukkan barcode..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                            className="pr-10"
                             autoComplete="off"
                         />
                         <button
                             type="button"
                             onClick={toggleScanner}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-800"
                             aria-label={showScanner ? "Tutup Scanner" : "Buka Scanner"}
                             title={showScanner ? "Tutup Scanner" : "Buka Scanner"}
                         >
-                            <MagnifyingGlassIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                            {showScanner ? (
+                                <CameraIcon className="h-5 w-5" />
+                            ) : (
+                                <MagnifyingGlassIcon className="h-5 w-5" />
+                            )}
                         </button>
                     </form>
 
+                    {/* 🧾 Hasil pencarian manual */}
+                    {search && filteredProducts.length > 0 && (
+                        <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded shadow">
+                            {filteredProducts.map((product) => (
+                                <div
+                                    key={product.id}
+                                    className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                                    onClick={() => {
+                                        onAddProduct(product);
+                                        feedback();
+                                        setScannedCode(product.nama);
+                                        setTimeout(() => setScannedCode(null), 2000);
+                                        setSearch("");
+                                    }}
+                                >
+                                    <span>{product.nama}</span>
+                                    <span className="text-gray-600 font-medium">
+                                        Rp {product.harga.toLocaleString("id-ID")}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* 🎦 Scanner Kamera */}
                     {showScanner && (
-                        <div className="mt-4 rounded-md border border-gray-300 overflow-hidden shadow-lg">
+                        <div className="mt-4 border rounded-lg overflow-hidden relative">
                             <BarcodeScanner
                                 onDetected={(code: string) => {
+                                    if (!code) return;
                                     const found = products.find(
                                         (p) => p.barcode?.toLowerCase() === code.toLowerCase()
                                     );
                                     if (found) {
                                         onAddProduct(found);
+                                        feedback();
+                                        setScannedCode(found.nama);
+                                        setTimeout(() => setScannedCode(null), 2000);
                                         setSearch("");
                                         setShowScanner(false);
                                         setCameraAvailable(true);
                                     } else {
-                                        alert("Produk dengan barcode tersebut tidak ditemukan");
+                                        alert("Produk dengan barcode tersebut tidak ditemukan.");
                                     }
                                 }}
                                 onNoCamera={() => {
                                     setCameraAvailable(false);
                                 }}
                             />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowScanner(false)}
+                                className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1"
+                            >
+                                ✕
+                            </button>
                         </div>
                     )}
 
-                    {search && (
-                        <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded shadow text-sm sm:text-base">
-                            {filteredProducts.length > 0 ? (
-                                filteredProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
-                                        onClick={() => {
-                                            onAddProduct(product);
-                                            setSearch("");
-                                        }}
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                onAddProduct(product);
-                                                setSearch("");
-                                            }
-                                        }}
-                                        role="button"
-                                        aria-label={`Tambah produk ${product.nama} ke keranjang`}
-                                    >
-                                        <span>{product.nama}</span>
-                                        <span className="text-gray-600 font-medium">
-                                            Rp {product.harga.toLocaleString("id-ID")}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-500 p-2">Produk tidak ditemukan</p>
-                            )}
-                        </div>
+                    {/* Feedback hasil scan */}
+                    {scannedCode && (
+                        <p className="text-green-600 text-sm mt-2 text-center animate-pulse">
+                            ✅ {scannedCode} ditambahkan ke keranjang
+                        </p>
                     )}
                 </div>
 
+                {/* 🛒 Daftar Keranjang */}
                 {cart.length > 0 ? (
                     <>
                         <div className="overflow-x-auto rounded-md border border-gray-300">
-                            <table className="w-full border-collapse border border-gray-300 text-sm sm:text-base min-w-[600px]">
-                                <thead>
-                                    <tr className="bg-gray-100">
-                                        <th className="border p-2 text-left whitespace-nowrap">Produk</th>
-                                        <th className="border p-2 text-left whitespace-nowrap">Harga</th>
-                                        <th className="border p-2 text-left whitespace-nowrap">Jumlah</th>
-                                        <th className="border p-2 text-left whitespace-nowrap">Subtotal</th>
-                                        <th className="border p-2 text-left whitespace-nowrap">Aksi</th>
+                            <table className="w-full text-sm border-collapse">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="border p-2 text-left">Produk</th>
+                                        <th className="border p-2 text-left">Harga</th>
+                                        <th className="border p-2 text-left">Jumlah</th>
+                                        <th className="border p-2 text-left">Subtotal</th>
+                                        <th className="border p-2 text-left">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {cart.map((item) => (
                                         <tr key={item.product.id}>
-                                            <td className="border p-2 whitespace-nowrap">{item.product.nama}</td>
-                                            <td className="border p-2 whitespace-nowrap">
+                                            <td className="border p-2">{item.product.nama}</td>
+                                            <td className="border p-2">
                                                 Rp {item.product.harga.toLocaleString("id-ID")}
                                             </td>
                                             <td className="border p-2">
@@ -218,10 +248,9 @@ export function CartDialog({
                                                         }
                                                     }}
                                                     className="w-20"
-                                                    aria-label={`Jumlah produk ${item.product.nama}`}
                                                 />
                                             </td>
-                                            <td className="border p-2 whitespace-nowrap">
+                                            <td className="border p-2">
                                                 Rp {(item.product.harga * item.quantity).toLocaleString("id-ID")}
                                             </td>
                                             <td className="border p-2">
@@ -230,9 +259,8 @@ export function CartDialog({
                                                     size="sm"
                                                     onClick={() => removeFromCart(item.product.id)}
                                                     className="text-red-500 hover:text-red-700"
-                                                    aria-label={`Hapus produk ${item.product.nama} dari keranjang`}
                                                 >
-                                                    <XMarkIcon className="h-4 w-4" /> {/* ✅ Ganti XIcon ke XMarkIcon */}
+                                                    <XMarkIcon className="h-4 w-4" />
                                                 </Button>
                                             </td>
                                         </tr>
@@ -241,7 +269,7 @@ export function CartDialog({
                             </table>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-between items-center mt-4 font-semibold text-base gap-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-center mt-4 font-semibold gap-4">
                             <span>Total: Rp {total.toLocaleString("id-ID")}</span>
                             <Button onClick={onCheckout} className="w-full sm:w-auto">
                                 Checkout
@@ -249,9 +277,7 @@ export function CartDialog({
                         </div>
                     </>
                 ) : (
-                    <p className="text-gray-500 mt-4 text-sm sm:text-base text-center">
-                        Keranjang kosong
-                    </p>
+                    <p className="text-gray-500 mt-4 text-center">Keranjang kosong</p>
                 )}
             </DialogContent>
         </Dialog>

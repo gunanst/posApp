@@ -1,249 +1,159 @@
-"use client";
+'use client';
 
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader, Result } from "@zxing/library";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
-type BarcodeScannerProps = {
+export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
-  onNoCamera: () => void;
+  onNoCamera?: () => void;
 };
 
 export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
-
-  const [error, setError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasCamera, setHasCamera] = useState<boolean | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  // Tunggu sampai video punya dimensi valid
-  const waitForVideoDimensions = (video: HTMLVideoElement): Promise<void> => {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (video.videoWidth > 0 && video.videoHeight > 0) {
-          resolve();
-        } else {
-          requestAnimationFrame(check);
-        }
-      };
-      check();
-    });
-  };
+  const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState(false);
+  const [torchEnabled, setTorchEnabled] = useState(false);
 
   useEffect(() => {
-    codeReaderRef.current = new BrowserMultiFormatReader();
+    let stream: MediaStream | null = null;
+    let scanning = false;
+    let scanInterval: ReturnType<typeof setInterval> | null = null;
 
-    async function startCamera() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-        setError("Browser Anda tidak mendukung fitur kamera.");
-        setHasCamera(false);
-        onNoCamera();
-        setLoading(false);
-        return;
-      }
-
+    const initCamera = async () => {
       try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoInputDevices = devices.filter(
-          (d): d is MediaDeviceInfo => d.kind === "videoinput"
-        );
+        setLoading(true);
 
-        if (videoInputDevices.length === 0) {
-          setError("Kamera tidak ditemukan pada perangkat ini.");
-          setHasCamera(false);
-          onNoCamera();
-          setLoading(false);
-          return;
-        }
+        // Gunakan kamera belakang
+        const constraints: MediaStreamConstraints = {
+          video: { facingMode: { ideal: "environment" } },
+        };
 
-        setHasCamera(true);
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = videoRef.current;
+        if (!video) return;
 
-        if (!videoRef.current) {
-          setError("Elemen video tidak tersedia.");
-          setLoading(false);
-          return;
-        }
+        video.srcObject = stream;
+        await video.play();
 
-        const videoElement = videoRef.current;
-        const deviceId = videoInputDevices[0].deviceId;
+        setActive(true);
+        setLoading(false);
 
-        if (videoElement.srcObject) {
-          // Stream sudah aktif, hindari set ulang untuk mencegah error play()
-          setLoading(false);
-          return;
-        }
+        const track = stream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities?.();
 
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId } });
-        videoElement.srcObject = stream;
-
-        try {
-          await videoElement.play();
-        } catch (playError) {
-          console.warn("Gagal memutar video kamera:", playError);
-          // Bisa di-handle atau diabaikan, tergantung kebutuhan
-        }
-
-        await waitForVideoDimensions(videoElement);
-
-        if (!codeReaderRef.current) {
-          setError("Scanner belum siap.");
-          setLoading(false);
-          return;
-        }
-
-        codeReaderRef.current.decodeFromVideoDevice(
-          deviceId,
-          videoElement,
-          (result: Result | undefined, err: unknown) => {
-            if (result) {
-              onDetected(result.getText());
-              setError(null);
-              setLoading(false);
-            }
-
-            if (err && (err as { name?: string }).name !== "NotFoundException") {
-              console.error("Error scanning barcode:", err);
-              if (err instanceof Error) {
-                setError(err.message);
-              } else {
-                setError(String(err));
-              }
-              setLoading(false);
-            }
+        // 🔦 Torch support aman untuk TypeScript
+        if (capabilities && Object.prototype.hasOwnProperty.call(capabilities, "torch")) {
+          try {
+            // TypeScript tidak tahu bahwa "torch" valid, jadi kita pakai type inline custom
+            const torchConstraint: MediaTrackConstraints & { advanced?: Array<{ torch?: boolean }> } = {
+              advanced: [{ torch: torchEnabled }],
+            };
+            await track.applyConstraints(torchConstraint);
+          } catch {
+            console.warn("Torch tidak bisa diaktifkan pada perangkat ini.");
           }
-        );
-
-        setLoading(false);
-      } catch (err: unknown) {
-        console.error("Gagal mengakses kamera:", err);
-        if (err instanceof Error) {
-          setError(
-            err.message ||
-              "Gagal mengakses kamera. Pastikan browser Anda mendukung kamera dan sudah memberikan izin."
-          );
-        } else {
-          setError(
-            "Gagal mengakses kamera. Pastikan browser Anda mendukung kamera dan sudah memberikan izin."
-          );
         }
-        setHasCamera(false);
-        onNoCamera();
-        setLoading(false);
-      }
-    }
 
-    startCamera();
+
+        // 🧠 Barcode detector
+        const hasBarcodeDetector = "BarcodeDetector" in window;
+        if (!hasBarcodeDetector) {
+          setError("Browser tidak mendukung BarcodeDetector API");
+          return;
+        }
+
+        // @ts-expect-error: BarcodeDetector belum dideklarasi global oleh TS
+        const barcodeDetector = new window.BarcodeDetector({
+          formats: [
+            "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
+            "code_39", "codabar", "itf", "qr_code"
+          ],
+        });
+
+        // Setup canvas untuk membaca frame video
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        scanning = true;
+
+        scanInterval = setInterval(async () => {
+          if (!video || !ctx || !scanning || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          try {
+            const barcodes = await barcodeDetector.detect(canvas);
+            if (barcodes.length > 0 && barcodes[0].rawValue) {
+              scanning = false;
+              clearInterval(scanInterval!);
+
+              // 📳 Getar di HP
+              if (navigator.vibrate) navigator.vibrate(200);
+
+              onDetected(barcodes[0].rawValue);
+            }
+          } catch (err) {
+            console.warn("Barcode detection error:", err);
+          }
+        }, 400);
+      } catch (err) {
+        console.error("Camera error:", err);
+        setError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
+        setLoading(false);
+        setActive(false);
+        onNoCamera?.();
+      }
+    };
+
+    initCamera();
 
     return () => {
-      if (codeReaderRef.current) {
-        codeReaderRef.current.reset();
+      scanning = false;
+      if (scanInterval) clearInterval(scanInterval);
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
       }
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-        videoRef.current.srcObject = null;
-      }
+      setActive(false);
     };
-  }, []); // <- empty dependency supaya hanya dijalankan sekali saat mount
+  }, [onDetected, onNoCamera, torchEnabled]);
 
-  // Fallback upload gambar barcode
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setError(null);
-
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        img.src = reader.result;
-      }
-    };
-
-    img.onload = async () => {
-      if (!codeReaderRef.current) {
-        setError("Scanner belum siap.");
-        setUploading(false);
-        return;
-      }
-
-      try {
-        const result = await codeReaderRef.current.decodeFromImageElement(img);
-        onDetected(result.getText());
-        setError(null);
-      } catch (err: unknown) {
-        console.error("Gagal membaca barcode dari gambar:", err);
-        if (err instanceof Error) {
-          setError("Gagal membaca barcode dari gambar. Pastikan gambar jelas dan barcode terlihat.");
-        } else {
-          setError("Gagal membaca barcode dari gambar.");
-        }
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    reader.onerror = () => {
-      setError("Gagal membaca file gambar.");
-      setUploading(false);
-    };
-
-    reader.readAsDataURL(file);
-  };
+  const toggleTorch = () => setTorchEnabled((prev) => !prev);
 
   return (
-    <div className="w-full max-w-md mx-auto rounded-md overflow-hidden border border-gray-300 bg-black relative">
-      {/* Loading overlay saat kamera sedang diakses */}
-      {loading && hasCamera && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white text-center p-4">
-          Mengakses kamera...
+    <div className="relative w-full bg-black rounded-lg overflow-hidden">
+      {loading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white z-10">
+          <Loader2 className="animate-spin h-6 w-6 mb-2" />
+          <p>Mengaktifkan kamera...</p>
         </div>
       )}
 
-      {/* Pesan error */}
-      {!loading && error && (
-        <div className="p-4 bg-red-100 text-red-700 text-center text-sm sm:text-base">
-          {error}
-          <br />
-          <small>
-            Silakan gunakan input manual atau upload gambar barcode jika kamera tidak tersedia.
-          </small>
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-red-600/80 text-white text-center p-4 z-10">
+          <p>{error}</p>
         </div>
       )}
 
-      {/* Video kamera hanya tampil jika kamera tersedia dan tidak error */}
       <video
         ref={videoRef}
-        className={`w-full h-auto ${error || !hasCamera ? "hidden" : "block"}`}
+        className="w-full h-auto max-h-[60vh] object-cover"
         muted
         playsInline
-        autoPlay
-        style={{ borderRadius: 8, objectFit: "cover", aspectRatio: "4 / 3" }}
       />
 
-      {/* Upload fallback untuk perangkat tanpa kamera */}
-      {!hasCamera && (
-        <div className="p-4 bg-white rounded-md mt-2">
-          <label
-            htmlFor="barcode-upload"
-            className="block cursor-pointer border border-dashed border-gray-400 rounded-md p-4 text-center text-gray-600 hover:bg-gray-50"
-          >
-            {uploading ? "Memproses gambar..." : "Upload gambar barcode"}
-            <input
-              id="barcode-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={uploading}
-            />
-          </label>
-        </div>
-      )}
+      <div className="absolute bottom-2 right-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={toggleTorch}
+          disabled={!active}
+        >
+          {torchEnabled ? "Matikan Flash" : "Nyalakan Flash"}
+        </Button>
+      </div>
     </div>
   );
 }

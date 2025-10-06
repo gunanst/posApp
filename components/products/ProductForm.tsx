@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Category, ProductFormValues } from "@/lib/type";
+import { Category, ProductFormValues } from "@/app/types/type";
 import Image from "next/image";
 import BarcodeScanner from "@/components/transaction/BarcodeScanner";
-import { SearchIcon } from "lucide-react"; // ✅ Tambahkan ini
+import { SearchIcon } from "lucide-react";
 
 type ProductFormProps = {
     defaultValues?: ProductFormValues;
@@ -16,29 +16,49 @@ type ProductFormProps = {
 export default function ProductForm({ defaultValues, categories }: ProductFormProps) {
     const barcodeInputRef = useRef<HTMLInputElement>(null);
     const [showScanner, setShowScanner] = useState(false);
+    const [barcodeValue, setBarcodeValue] = useState(defaultValues?.barcode ?? "");
 
     const handleBarcodeDetected = (code: string) => {
+        setBarcodeValue(code);
         if (barcodeInputRef.current) {
             barcodeInputRef.current.value = code;
         }
+
+        // Tutup scanner setelah berhasil scan
         setShowScanner(false);
+
+        // 🔊 Bunyi + Getar (backup jika di mobile)
+        try {
+            if ("vibrate" in navigator) navigator.vibrate(150);
+            const audioCtx = new AudioContext();
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = "square";
+            oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 150);
+        } catch {
+            // Abaikan error audio di iOS Safari tanpa gesture
+        }
     };
 
     const handleNoCamera = () => {
-        console.warn("Kamera tidak tersedia.");
+        alert("Kamera tidak ditemukan. Pastikan izin sudah diberikan dan gunakan HTTPS.");
     };
 
     return (
         <div className="space-y-4">
             {/* Barcode + Scanner */}
             <div>
-                <Label htmlFor="barcode">Barcode</Label>
+                <Label htmlFor="barcode">Kode Barcode</Label>
                 <div className="flex items-center gap-2">
                     <Input
                         id="barcode"
                         name="barcode"
-                        defaultValue={defaultValues?.barcode ?? ""}
                         ref={barcodeInputRef}
+                        value={barcodeValue}
+                        onChange={(e) => setBarcodeValue(e.target.value)}
+                        placeholder="Scan atau ketik kode barcode"
                         required
                     />
                     <button
@@ -63,11 +83,12 @@ export default function ProductForm({ defaultValues, categories }: ProductFormPr
 
             {/* Nama */}
             <div>
-                <Label htmlFor="nama">Nama</Label>
+                <Label htmlFor="nama">Nama Produk</Label>
                 <Input
                     id="nama"
                     name="nama"
                     defaultValue={defaultValues?.nama ?? ""}
+                    placeholder="Masukkan nama produk"
                     required
                 />
             </div>
@@ -80,6 +101,7 @@ export default function ProductForm({ defaultValues, categories }: ProductFormPr
                     name="harga"
                     type="number"
                     defaultValue={defaultValues?.harga?.toString() ?? ""}
+                    placeholder="Masukkan harga produk"
                     required
                 />
             </div>
@@ -92,6 +114,7 @@ export default function ProductForm({ defaultValues, categories }: ProductFormPr
                     name="stok"
                     type="number"
                     defaultValue={defaultValues?.stok?.toString() ?? ""}
+                    placeholder="Masukkan stok produk"
                     required
                 />
             </div>
@@ -104,6 +127,7 @@ export default function ProductForm({ defaultValues, categories }: ProductFormPr
                     name="categoryId"
                     defaultValue={defaultValues?.categoryId?.toString() ?? ""}
                     className="border p-2 w-full rounded"
+                    required
                 >
                     <option value="">-- Pilih Kategori --</option>
                     {categories.map((c) => (
@@ -124,7 +148,7 @@ export default function ProductForm({ defaultValues, categories }: ProductFormPr
                     accept="image/*"
                 />
                 {defaultValues?.image && (
-                    <div className="relative h-16 w-16 rounded overflow-hidden mt-2">
+                    <div className="relative h-16 w-16 rounded overflow-hidden mt-2 border">
                         <Image
                             src={defaultValues.image}
                             alt="Preview"

@@ -1,5 +1,5 @@
 import { getCategories } from "@/lib/actions/categoryAction"
-import { Category } from "@/lib/type"
+import { Category } from "@/app/types/type"
 import CategoryTable from "@/components/categories/CategoryTable"
 
 export default async function CategoryPage() {

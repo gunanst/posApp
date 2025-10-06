@@ -23,7 +23,7 @@ import {
     updateCategory,
 } from "@/lib/actions/categoryAction";
 import CategoryForm from "@/components/categories/CategoryForm";
-import { Category } from "@/lib/type";
+import { Category } from "@/app/types/type";
 
 export default function CategoryTable({ category }: { category: Category[] }) {
     const [openAdd, setOpenAdd] = useState(false);

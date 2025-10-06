@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Category, Product } from '@/app/types/type';
+import { Category, Product } from '@/types/type';
 import { deleteProduct } from '@/lib/actions/productAction';
 import CreateProductDialog from './CreateProductDialog';
 import EditProductDialog from './EditProductDialog';

@@ -1,6 +1,6 @@
 'use client';
 
-import { TransactionType } from '@/app/types/type';
+import { TransactionType } from '@/types/type';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Category, ProductFormValues } from "@/app/types/type";
+import { Category, ProductFormValues } from "@/types/type";
 import Image from "next/image";
 import BarcodeScanner from "@/components/transaction/BarcodeScanner";
 import { SearchIcon } from "lucide-react";

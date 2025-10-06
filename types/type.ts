@@ -14,6 +14,7 @@ export type Product = {
     deletedAt: Date | null; // ← tambahkan ini!
     categoryId: number | null;
     image: string | null;
+    Category?: Category | null;
 };
 
 // 🔥 khusus untuk form input (tidak pakai Date, tidak pakai relasi langsung)
@@ -55,4 +56,8 @@ export type TransactionType = {
         product: Product;
         quantity: number;
     }[];
+};
+
+export type CategoryFormProps = {
+    defaultValues?: Partial<Category>;
 };

@@ -1,7 +1,7 @@
 import { getProducts } from '@/lib/actions/productAction'
 import { getCategories } from '@/lib/actions/categoryAction'
 import ProductTable from '@/components/products/ProductTable'
-import { Product, Category } from "@/app/types/type";
+import { Product, Category } from "@/types/type";
 
 export default async function ProductPage() {
     let ambilData: Product[] = []

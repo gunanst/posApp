@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CategoryFormProps } from "@/app/types/type";
+import { CategoryFormProps } from "@/types/type";
 
 
 export default function CategoryForm({ defaultValues }: CategoryFormProps) {

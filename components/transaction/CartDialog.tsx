@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CartItem, Product } from "@/app/types/type";
+import { CartItem, Product } from "@/types/type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { XMarkIcon, CameraIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";

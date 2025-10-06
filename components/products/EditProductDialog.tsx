@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { updateProduct } from "@/lib/actions/productAction";
 import ProductForm from "./ProductForm";
-import { Category, Product } from "@/app/types/type";
+import { Category, Product } from "@/types/type";
 
 export default function EditProductDialog({ product, categories }: { product: Product, categories: Category[] }) {
     return (

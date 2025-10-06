@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { CartItem, Product } from "@/types/type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ type CartDialogProps = {
     onAddProduct: (product: Product) => void;
     errorMessage?: string | null;
     setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
+    isCheckingOut?: boolean;
 };
 
 export function CartDialog({
@@ -37,6 +38,7 @@ export function CartDialog({
     onAddProduct,
     errorMessage,
     setCart,
+    isCheckingOut = false,
 }: CartDialogProps) {
     const [search, setSearch] = useState("");
     const [showScanner, setShowScanner] = useState(false);
@@ -60,10 +62,13 @@ export function CartDialog({
             osc.connect(ctx.destination);
             osc.start();
             setTimeout(() => osc.stop(), 150);
-        } catch { }
+        } catch {
+            // Ignore audio errors
+        }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
         const code = search.trim().toLowerCase();
         if (!code) return;
 
@@ -97,6 +102,28 @@ export function CartDialog({
         setCart((prev) => prev.filter((item) => item.product.id !== productId));
     };
 
+    const handleBarcodeDetected = (code: string) => {
+        if (!code) return;
+        const found = products.find(
+            (p) => p.barcode?.toLowerCase() === code.toLowerCase()
+        );
+        if (found) {
+            onAddProduct(found);
+            feedback();
+            setScannedCode(found.nama);
+            setTimeout(() => setScannedCode(null), 2000);
+            setSearch("");
+            setShowScanner(false);
+            setCameraAvailable(true);
+        } else {
+            alert("Produk dengan barcode tersebut tidak ditemukan.");
+        }
+    };
+
+    const handleNoCamera = () => {
+        setCameraAvailable(false);
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
@@ -117,10 +144,7 @@ export function CartDialog({
                 {/* 🔍 Input Cari Produk */}
                 <div className="mb-4 relative w-full max-w-full">
                     <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            handleSubmit();
-                        }}
+                        onSubmit={handleSubmit}
                         className="relative w-full"
                     >
                         <Input
@@ -131,6 +155,7 @@ export function CartDialog({
                             onChange={(e) => setSearch(e.target.value)}
                             className="pr-10"
                             autoComplete="off"
+                            disabled={isCheckingOut}
                         />
                         <button
                             type="button"
@@ -138,6 +163,7 @@ export function CartDialog({
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-800"
                             aria-label={showScanner ? "Tutup Scanner" : "Buka Scanner"}
                             title={showScanner ? "Tutup Scanner" : "Buka Scanner"}
+                            disabled={isCheckingOut}
                         >
                             {showScanner ? (
                                 <CameraIcon className="h-5 w-5" />
@@ -151,9 +177,10 @@ export function CartDialog({
                     {search && filteredProducts.length > 0 && (
                         <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded shadow">
                             {filteredProducts.map((product) => (
-                                <div
+                                <button
                                     key={product.id}
-                                    className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                                    type="button"
+                                    className="w-full p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center text-left disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={() => {
                                         onAddProduct(product);
                                         feedback();
@@ -161,12 +188,13 @@ export function CartDialog({
                                         setTimeout(() => setScannedCode(null), 2000);
                                         setSearch("");
                                     }}
+                                    disabled={isCheckingOut}
                                 >
                                     <span>{product.nama}</span>
                                     <span className="text-gray-600 font-medium">
                                         Rp {product.harga.toLocaleString("id-ID")}
                                     </span>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     )}
@@ -175,32 +203,16 @@ export function CartDialog({
                     {showScanner && (
                         <div className="mt-4 border rounded-lg overflow-hidden relative">
                             <BarcodeScanner
-                                onDetected={(code: string) => {
-                                    if (!code) return;
-                                    const found = products.find(
-                                        (p) => p.barcode?.toLowerCase() === code.toLowerCase()
-                                    );
-                                    if (found) {
-                                        onAddProduct(found);
-                                        feedback();
-                                        setScannedCode(found.nama);
-                                        setTimeout(() => setScannedCode(null), 2000);
-                                        setSearch("");
-                                        setShowScanner(false);
-                                        setCameraAvailable(true);
-                                    } else {
-                                        alert("Produk dengan barcode tersebut tidak ditemukan.");
-                                    }
-                                }}
-                                onNoCamera={() => {
-                                    setCameraAvailable(false);
-                                }}
+                                onDetected={handleBarcodeDetected}
+                                onNoCamera={handleNoCamera}
                             />
 
                             <button
                                 type="button"
                                 onClick={() => setShowScanner(false)}
                                 className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1"
+                                aria-label="Tutup scanner"
+                                disabled={isCheckingOut}
                             >
                                 ✕
                             </button>
@@ -248,6 +260,7 @@ export function CartDialog({
                                                         }
                                                     }}
                                                     className="w-20"
+                                                    disabled={isCheckingOut}
                                                 />
                                             </td>
                                             <td className="border p-2">
@@ -259,6 +272,8 @@ export function CartDialog({
                                                     size="sm"
                                                     onClick={() => removeFromCart(item.product.id)}
                                                     className="text-red-500 hover:text-red-700"
+                                                    aria-label={`Hapus ${item.product.nama} dari keranjang`}
+                                                    disabled={isCheckingOut}
                                                 >
                                                     <XMarkIcon className="h-4 w-4" />
                                                 </Button>
@@ -271,8 +286,19 @@ export function CartDialog({
 
                         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 font-semibold gap-4">
                             <span>Total: Rp {total.toLocaleString("id-ID")}</span>
-                            <Button onClick={onCheckout} className="w-full sm:w-auto">
-                                Checkout
+                            <Button
+                                onClick={onCheckout}
+                                className="w-full sm:w-auto"
+                                disabled={isCheckingOut || cart.length === 0}
+                            >
+                                {isCheckingOut ? (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        <span>Memproses...</span>
+                                    </div>
+                                ) : (
+                                    'Checkout'
+                                )}
                             </Button>
                         </div>
                     </>

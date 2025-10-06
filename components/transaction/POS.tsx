@@ -1,9 +1,8 @@
-// POS.tsx
 'use client';
 
 import { useState } from 'react';
 import { Product, CartItem, TransactionType } from '@/types/type';
-import { createTransaction } from '@/lib/actions/transactionAction'; // Pastikan path benar
+import { createTransaction } from '@/lib/actions/transactionAction';
 import { Button } from '@/components/ui/button';
 import { CartDialog } from './CartDialog';
 import { StrukDialog } from './StrukDialog';
@@ -17,8 +16,8 @@ export default function POS({ products }: POSProps) {
     const [cartOpen, setCartOpen] = useState(false);
     const [struk, setStruk] = useState<TransactionType | null>(null);
     const [strukOpen, setStrukOpen] = useState(false);
-    // State untuk menampung pesan error
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isCheckingOut, setIsCheckingOut] = useState(false); // State untuk mencegah checkout ganda
 
     const addToCart = (product: Product) => {
         setCart(prev => {
@@ -41,34 +40,41 @@ export default function POS({ products }: POSProps) {
     const total = cart.reduce((acc, c) => acc + c.product.harga * c.quantity, 0);
 
     const handleCheckout = async () => {
+        // Cegah checkout ganda
+        if (isCheckingOut) {
+            console.log('Checkout sedang diproses, tunggu sebentar...');
+            return;
+        }
+
         if (cart.length === 0) {
-            // Tidak perlu alert, cukup tampilkan di UI
             setErrorMessage('Keranjang kosong!');
             return;
         }
 
-        // Reset error sebelum checkout
+        // Reset error dan set loading state
         setErrorMessage(null);
+        setIsCheckingOut(true);
 
         try {
-            // Bungkus pemanggilan server action dalam try-catch
             const transaction = await createTransaction(
                 cart.map(c => ({ productId: c.product.id, quantity: c.quantity }))
             );
+
             // Jika berhasil
             setStruk(transaction);
             setCart([]);
             setCartOpen(false);
             setStrukOpen(true);
-        } catch (error: unknown) { // Tangkap error dari server action
-            console.error('Checkout error:', error); // Log untuk debugging
+        } catch (error: unknown) {
+            console.error('Checkout error:', error);
             if (error instanceof Error) {
-                // Tampilkan pesan error dari server action di UI
-                setErrorMessage(error.message); // Pesan: "Stok produk ... tidak mencukupi..."
+                setErrorMessage(error.message);
             } else {
-                // Jika error bukan instance dari Error, tampilkan pesan umum
                 setErrorMessage('Terjadi kesalahan saat checkout.');
             }
+        } finally {
+            // Pastikan loading state direset baik sukses maupun gagal
+            setIsCheckingOut(false);
         }
     };
 
@@ -88,18 +94,28 @@ export default function POS({ products }: POSProps) {
                         <h3 className="font-semibold text-center">{product.nama}</h3>
                         <p className="text-sm text-gray-600 mb-2">Rp {product.harga.toLocaleString('id-ID')}</p>
                         <p className="text-sm text-gray-600 mb-2">Stok: {product.stok}</p>
-                        <Button size="sm" onClick={() => addToCart(product)}>Tambah</Button>
+                        <Button
+                            size="sm"
+                            onClick={() => addToCart(product)}
+                            disabled={isCheckingOut} // Nonaktifkan tombol saat checkout berjalan
+                        >
+                            Tambah
+                        </Button>
                     </div>
                 ))}
             </div>
 
             {/* Tombol buka keranjang */}
             <div>
-                <Button onClick={() => setCartOpen(true)}>Lihat Keranjang ({cart.length})</Button>
+                <Button
+                    onClick={() => setCartOpen(true)}
+                    disabled={isCheckingOut} // Nonaktifkan tombol saat checkout berjalan
+                >
+                    Lihat Keranjang ({cart.length})
+                </Button>
             </div>
 
             {/* Dialog Keranjang */}
-            {/* Kirim errorMessage ke CartDialog jika ingin ditampilkan di sana juga */}
             <CartDialog
                 open={cartOpen}
                 onOpenChange={setCartOpen}
@@ -109,8 +125,9 @@ export default function POS({ products }: POSProps) {
                 onUpdateQuantity={updateQuantity}
                 onAddProduct={addToCart}
                 onCheckout={handleCheckout}
-                errorMessage={errorMessage} // Tambahkan prop ini
+                errorMessage={errorMessage}
                 setCart={setCart}
+                isCheckingOut={isCheckingOut} // Tambahkan prop untuk status checkout
             />
 
             {/* Dialog Struk */}
@@ -119,6 +136,18 @@ export default function POS({ products }: POSProps) {
                 onOpenChange={setStrukOpen}
                 struk={struk}
             />
+
+            {/* Loading indicator (opsional) */}
+            {isCheckingOut && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <div className="flex items-center space-x-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                            <span>Memproses checkout...</span>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

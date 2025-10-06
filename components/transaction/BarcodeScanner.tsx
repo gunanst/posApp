@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 
 export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
@@ -15,6 +15,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
+  const [cameraAvailable, setCameraAvailable] = useState(true);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -24,8 +25,8 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
     const initCamera = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        // Gunakan kamera belakang
         const constraints: MediaStreamConstraints = {
           video: { facingMode: { ideal: "environment" } },
         };
@@ -39,32 +40,35 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
 
         setActive(true);
         setLoading(false);
+        setCameraAvailable(true);
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.();
+        const capabilities = track.getCapabilities?.() as any; // pakai any supaya TS tidak error
 
-        // 🔦 Torch support aman untuk TypeScript
-        if (capabilities && Object.prototype.hasOwnProperty.call(capabilities, "torch")) {
+        if (capabilities && "torch" in capabilities) {
           try {
-            // TypeScript tidak tahu bahwa "torch" valid, jadi kita pakai type inline custom
-            const torchConstraint: MediaTrackConstraints & { advanced?: Array<{ torch?: boolean }> } = {
+            const torchConstraint: any = {
               advanced: [{ torch: torchEnabled }],
             };
+
+            // auto fokus jika tersedia, tapi pakai any untuk hindari TS error
+            if (capabilities.focusMode?.includes("continuous")) {
+              torchConstraint.advanced[0].focusMode = "continuous";
+            }
+
             await track.applyConstraints(torchConstraint);
           } catch {
-            console.warn("Torch tidak bisa diaktifkan pada perangkat ini.");
+            console.warn("Torch atau auto fokus tidak bisa diaktifkan pada perangkat ini.");
           }
         }
 
-
-        // 🧠 Barcode detector
         const hasBarcodeDetector = "BarcodeDetector" in window;
         if (!hasBarcodeDetector) {
           setError("Browser tidak mendukung BarcodeDetector API");
           return;
         }
 
-        // @ts-expect-error: BarcodeDetector belum dideklarasi global oleh TS
+        // @ts-expect-error
         const barcodeDetector = new window.BarcodeDetector({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
@@ -72,7 +76,6 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           ],
         });
 
-        // Setup canvas untuk membaca frame video
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         scanning = true;
@@ -90,7 +93,6 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
               scanning = false;
               clearInterval(scanInterval!);
 
-              // 📳 Getar di HP
               if (navigator.vibrate) navigator.vibrate(200);
 
               onDetected(barcodes[0].rawValue);
@@ -101,9 +103,10 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         }, 400);
       } catch (err) {
         console.error("Camera error:", err);
-        setError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
+        setError("Tidak dapat mengakses kamera. Silakan unggah gambar barcode atau periksa izin kamera.");
         setLoading(false);
         setActive(false);
+        setCameraAvailable(false);
         onNoCamera?.();
       }
     };
@@ -113,14 +116,50 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
     return () => {
       scanning = false;
       if (scanInterval) clearInterval(scanInterval);
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
+      if (stream) stream.getTracks().forEach((t) => t.stop());
       setActive(false);
     };
   }, [onDetected, onNoCamera, torchEnabled]);
 
   const toggleTorch = () => setTorchEnabled((prev) => !prev);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+
+      // @ts-expect-error
+      const barcodeDetector = new window.BarcodeDetector({
+        formats: [
+          "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
+          "code_39", "codabar", "itf", "qr_code"
+        ],
+      });
+
+      try {
+        const barcodes = await barcodeDetector.detect(canvas);
+        if (barcodes.length > 0 && barcodes[0].rawValue) {
+          if (navigator.vibrate) navigator.vibrate(200);
+          onDetected(barcodes[0].rawValue);
+        } else {
+          setError("Barcode tidak terbaca dari gambar.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Gagal mendeteksi barcode dari gambar.");
+      }
+    };
+
+    img.src = URL.createObjectURL(file);
+  };
 
   return (
     <div className="relative w-full bg-black rounded-lg overflow-hidden">
@@ -132,8 +171,20 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       )}
 
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-600/80 text-white text-center p-4 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-600/80 text-white text-center p-4 z-10 gap-2">
           <p>{error}</p>
+          {!cameraAvailable && (
+            <label className="flex items-center gap-2 cursor-pointer bg-white text-black px-3 py-1 rounded">
+              <Upload className="w-4 h-4" />
+              <span>Unggah Gambar Barcode</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
+          )}
         </div>
       )}
 
@@ -144,7 +195,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         playsInline
       />
 
-      <div className="absolute bottom-2 right-2">
+      <div className="absolute bottom-2 right-2 flex gap-2">
         <Button
           size="sm"
           variant="secondary"

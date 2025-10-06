@@ -4,34 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, Repeat } from "lucide-react";
 
-// Deklarasi tipe untuk BarcodeDetector API
-declare global {
-  interface Window {
-    BarcodeDetector?: {
-      new(options?: { formats: string[] }): {
-        detect: (image: ImageBitmapSource) => Promise<Array<{
-          rawValue: string;
-          boundingBox: DOMRectReadOnly;
-          format: string;
-          cornerPoints: Array<{ x: number; y: number }>;
-        }>>;
-      };
-    };
-  }
-}
-
-interface BarcodeDetectorResult {
-  rawValue: string;
-  boundingBox: DOMRectReadOnly;
-  format: string;
-  cornerPoints: Array<{ x: number; y: number }>;
-}
-
-interface MediaTrackCapabilitiesWithTorch extends MediaTrackCapabilities {
-  torch?: boolean;
-  focusMode?: string[];
-}
-
 export type BarcodeScannerProps = {
   onDetected: (code: string) => void;
   onNoCamera?: () => void;
@@ -72,28 +44,22 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
         setCameraAvailable(true);
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities() as MediaTrackCapabilitiesWithTorch;
+        const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { focusMode?: string[] };
 
         if (capabilities && "torch" in capabilities) {
           try {
-            const advancedConstraints: MediaTrackConstraintSet[] = [{
-              torch: torchEnabled,
-              ...(capabilities.focusMode?.includes("continuous") && { focusMode: "continuous" })
-            }];
-
+            const advancedConstraints: Array<Record<string, boolean | string>> = [{ torch: torchEnabled }];
+            if (capabilities.focusMode?.includes("continuous")) {
+              advancedConstraints[0]["focusMode"] = "continuous";
+            }
             await track.applyConstraints({ advanced: advancedConstraints });
           } catch {
-            console.warn("Torch atau auto fokus tidak bisa diaktifkan pada perangkat ini.");
+            console.warn("Torch atau auto fokus tidak bisa diaktifkan.");
           }
         }
 
-        const hasBarcodeDetector = window.BarcodeDetector !== undefined;
-        if (!hasBarcodeDetector) {
-          setError("Browser tidak mendukung BarcodeDetector API");
-          return;
-        }
-
-        const barcodeDetector = new window.BarcodeDetector!({
+        // @ts-expect-error BarcodeDetector API global belum ada di TS, needed for detection
+        const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
           formats: [
             "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
             "code_39", "codabar", "itf", "qr_code"
@@ -112,13 +78,11 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           try {
-            const barcodes = await barcodeDetector.detect(canvas) as BarcodeDetectorResult[];
+            const barcodes = await barcodeDetector.detect(canvas);
             if (barcodes.length > 0 && barcodes[0].rawValue) {
               scanning = false;
-              if (scanInterval) clearInterval(scanInterval);
-
+              clearInterval(scanInterval!);
               if (navigator.vibrate) navigator.vibrate(200);
-
               onDetected(barcodes[0].rawValue);
             }
           } catch (err) {
@@ -161,12 +125,8 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       if (!ctx) return;
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      if (!window.BarcodeDetector) {
-        setError("Browser tidak mendukung BarcodeDetector API");
-        return;
-      }
-
-      const barcodeDetector = new window.BarcodeDetector({
+      // @ts-expect-error BarcodeDetector API global belum ada di TS, needed for detection
+      const barcodeDetector: BarcodeDetector = new window.BarcodeDetector({
         formats: [
           "code_128", "ean_13", "ean_8", "upc_a", "upc_e",
           "code_39", "codabar", "itf", "qr_code"
@@ -174,7 +134,7 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
       });
 
       try {
-        const barcodes = await barcodeDetector.detect(canvas) as BarcodeDetectorResult[];
+        const barcodes = await barcodeDetector.detect(canvas);
         if (barcodes.length > 0 && barcodes[0].rawValue) {
           if (navigator.vibrate) navigator.vibrate(200);
           onDetected(barcodes[0].rawValue);
@@ -206,39 +166,19 @@ export default function BarcodeScanner({ onDetected, onNoCamera }: BarcodeScanne
             <label className="flex items-center gap-2 cursor-pointer bg-white text-black px-3 py-1 rounded">
               <Upload className="w-4 h-4" />
               <span>Unggah Gambar Barcode</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
+              <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
             </label>
           )}
         </div>
       )}
 
-      <video
-        ref={videoRef}
-        className="w-full h-auto max-h-[60vh] object-cover"
-        muted
-        playsInline
-      />
+      <video ref={videoRef} className="w-full h-auto max-h-[60vh] object-cover" muted playsInline />
 
       <div className="absolute bottom-2 right-2 flex gap-2">
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={toggleTorch}
-          disabled={!active}
-        >
+        <Button size="sm" variant="secondary" onClick={toggleTorch} disabled={!active}>
           {torchEnabled ? "Matikan Flash" : "Nyalakan Flash"}
         </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={switchCamera}
-          disabled={!active}
-        >
+        <Button size="sm" variant="secondary" onClick={switchCamera} disabled={!active}>
           <Repeat className="w-4 h-4 mr-1" />
           Switch Kamera
         </Button>

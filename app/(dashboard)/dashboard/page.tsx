@@ -184,7 +184,8 @@ export default async function DashboardPage() {
                 health: systemStatus.transactions.status === 'healthy' ? 'Normal' : 'Check',
                 activity: systemStatus.transactions.recent
             }
-        }
+        },
+
     ];
 
     return (
@@ -208,7 +209,7 @@ export default async function DashboardPage() {
                         <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300">
                             <PlusIcon className="h-4 w-4 mr-2" />
                             <span className="hidden sm:inline">New Transaction</span>
-                            <span className="sm:hidden">POS</span>
+                            <span className="sm:hidden">Transaksi</span>
                         </Button>
                     </Link>
                 </div>

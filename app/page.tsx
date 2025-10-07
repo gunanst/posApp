@@ -9,76 +9,126 @@ import {
   ScanBarcode,
   Receipt,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Star,
+  TrendingUp,
+  Smartphone,
+  Laptop,
+  CreditCard,
+  Zap,
+  CheckCircle,
+  ArrowRight,
+  Store
 } from "lucide-react";
 
 export default function Home() {
-  const quickActions = [
+  const features = [
     {
-      icon: <ShoppingCart className="h-6 w-6" />,
-      title: "Transaksi Baru",
-      description: "Mulai transaksi penjualan baru",
-      href: "/dashboard/transaction",
-      color: "bg-blue-500 hover:bg-blue-600"
-    },
-    {
-      icon: <Package className="h-6 w-6" />,
-      title: "Kelola Produk",
-      description: "Tambah atau edit produk",
-      href: "/dashboard/products",
-      color: "bg-green-500 hover:bg-green-600"
-    },
-    {
-      icon: <BarChart3 className="h-6 w-6" />,
-      title: "Lihat Laporan",
-      description: "Analisis penjualan harian",
-      href: "/dashboard/history",
-      color: "bg-purple-500 hover:bg-purple-600"
+      icon: <Zap className="h-6 w-6" />,
+      title: "Transaksi Kilat",
+      description: "Proses penjualan cepat dengan antarmuka yang intuitif"
     },
     {
       icon: <ScanBarcode className="h-6 w-6" />,
       title: "Scan Barcode",
-      description: "Scan produk dengan kamera",
-      href: "/dashboard/transaction?scan=true",
-      color: "bg-orange-500 hover:bg-orange-600"
+      description: "Scan produk secara instan dengan kamera device"
+    },
+    {
+      icon: <BarChart3 className="h-6 w-6" />,
+      title: "Analitik Real-time",
+      description: "Pantau penjualan dan performa toko secara live"
+    },
+    {
+      icon: <Package className="h-6 w-6" />,
+      title: "Manajemen Stok",
+      description: "Kelola inventori dengan sistem notifikasi stok rendah"
+    },
+    {
+      icon: <CreditCard className="h-6 w-6" />,
+      title: "Multi Pembayaran",
+      description: "Dukung cash, QRIS, transfer, dan kartu debit/kredit"
+    },
+    {
+      icon: <Smartphone className="h-6 w-6" />,
+      title: "Responsif Mobile",
+      description: "Akses dari smartphone, tablet, atau desktop"
     }
   ];
 
-  const stats = [
+  const testimonials = [
     {
-      label: "Transaksi Hari Ini",
-      value: "24",
-      change: "+12%",
-      icon: <Receipt className="h-4 w-4" />,
-      color: "text-blue-600"
+      name: "Budi Santoso",
+      store: "Toko Elektronik Maju Jaya",
+      comment: "Sistem ini membuat proses transaksi 3x lebih cepat. Sangat recommended!",
+      rating: 5
     },
     {
-      label: "Produk Terjual",
-      value: "156",
-      change: "+8%",
-      icon: <Package className="h-4 w-4" />,
-      color: "text-green-600"
+      name: "Sari Dewi",
+      store: "Minimarket Sari Rasa",
+      comment: "Fitur laporan otomatis sangat membantu dalam mengambil keputusan bisnis.",
+      rating: 5
     },
     {
-      label: "Pendapatan",
-      value: "Rp 8.4JT",
-      change: "+15%",
-      icon: <BarChart3 className="h-4 w-4" />,
-      color: "text-purple-600"
+      name: "Ahmad Fauzi",
+      store: "Toko Bangunan Fauzi",
+      comment: "Interface yang sederhana tapi powerful. Staff cepat belajar menggunakannya.",
+      rating: 4
+    }
+  ];
+
+  const pricingPlans = [
+    {
+      name: "Starter",
+      price: "Gratis",
+      period: "Selamanya",
+      description: "Cocok untuk UKM dan toko kecil",
+      features: [
+        "Hingga 50 transaksi/hari",
+        "Manajemen produk dasar",
+        "Laporan penjualan harian",
+        "Support email"
+      ],
+      cta: "Mulai Sekarang",
+      popular: false
     },
     {
-      label: "Rata-rata Waktu",
-      value: "2.3m",
-      change: "-5%",
-      icon: <Clock className="h-4 w-4" />,
-      color: "text-orange-600"
+      name: "Professional",
+      price: "Rp 299rb",
+      period: "/bulan",
+      description: "Untuk toko dengan transaksi tinggi",
+      features: [
+        "Transaksi unlimited",
+        "Analitik lengkap",
+        "Multi kasir",
+        "Backup otomatis",
+        "Priority support",
+        "Integrasi QRIS"
+      ],
+      cta: "Coba Gratis 14 Hari",
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: "Rp 799rb",
+      period: "/bulan",
+      description: "Untuk retail chain dan franchise",
+      features: [
+        "Semua fitur Professional",
+        "Multi cabang",
+        "API access",
+        "Custom development",
+        "Dedicated account manager",
+        "Training staff"
+      ],
+      cta: "Hubungi Sales",
+      popular: false
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/10 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Navigation */}
+      <nav className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -87,176 +137,309 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  TOKO AZKIA
+                  Azkia POS
                 </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Sistem Kasir Toko</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Sistem Kasir Modern</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium">Selamat Datang</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Admin Toko</p>
-              </div>
+            <div className="flex items-center space-x-6">
+              <a href="#features" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
+                Fitur
+              </a>
+              <a href="#testimonials" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
+                Testimoni
+              </a>
+              <a href="#pricing" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
+                Harga
+              </a>
               <Link href="/dashboard">
                 <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg">
-                  Masuk Dashboard
+                  Mulai Sekarang
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Selamat Datang di Toko Azkia
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
-            Sistem Point of Sale untuk mengelola transaksi dan inventori toko Anda
-          </p>
-        </div>
+      {/* Hero Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-6 text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="inline-flex items-center space-x-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <TrendingUp className="h-4 w-4" />
+              <span>+500 Toko Telah Menggunakan Azkia POS</span>
+            </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
-                    {stat.icon}
-                  </div>
-                  <span className="text-sm font-medium text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
-                    {stat.change}
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {stat.label}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+              Kelola Toko Lebih
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Mudah & Cepat</span>
+            </h1>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
-            Akses Cepat
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
-              <Link key={index} href={action.href}>
-                <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-105 cursor-pointer group">
-                  <CardContent className="p-6 text-center">
-                    <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                      <div className="text-white">
-                        {action.icon}
-                      </div>
-                    </div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
-                      {action.title}
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {action.description}
-                    </p>
-                  </CardContent>
-                </Card>
+            <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
+              Sistem Point of Sale modern yang membantu Anda mengelola transaksi, stok, dan laporan penjualan dalam satu platform terintegrasi.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+              <Link href="/dashboard">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-8 py-3 text-lg">
+                  Coba Gratis
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </Link>
+              <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 px-8 py-3 text-lg">
+                Lihat Demo
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
+              {[
+                { number: "99.9%", label: "Uptime" },
+                { number: "3x", label: "Lebih Cepat" },
+                { number: "500+", label: "Toko Aktif" },
+                { number: "24/7", label: "Support" }
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white/50 dark:bg-slate-800/50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Fitur Unggulan untuk
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Kesuksesan Bisnis Anda</span>
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              Dilengkapi dengan segala yang Anda butuhkan untuk mengelola toko secara efisien
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                    <div className="text-white">
+                      {feature.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    {feature.description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Activity */}
-          <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Aktivitas Terbaru</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { time: "10:30", action: "Transaksi #TRX-0012", amount: "Rp 450.000" },
-                  { time: "10:15", action: "Produk ditambahkan", amount: "Speaker JBL" },
-                  { time: "09:45", action: "Transaksi #TRX-0011", amount: "Rp 320.000" },
-                  { time: "09:20", action: "Stok diperbarui", amount: "Air Mineral" },
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div>
-                        <p className="font-medium text-sm">{activity.action}</p>
-                        <p className="text-xs text-slate-500">{activity.time}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium">{activity.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* System Status */}
-          <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <ShieldCheck className="h-5 w-5" />
-                <span>Status Sistem</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { service: "Server Database", status: "Online", color: "bg-green-500" },
-                  { service: "API Transaksi", status: "Online", color: "bg-green-500" },
-                  { service: "Scanner Barcode", status: "Online", color: "bg-green-500" },
-                  { service: "Backup Data", status: "Aktif", color: "bg-blue-500" },
-                ].map((system, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <span className="font-medium text-sm">{system.service}</span>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 ${system.color} rounded-full`}></div>
-                      <span className="text-sm text-slate-600 dark:text-slate-400">{system.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-center space-x-2 text-blue-800 dark:text-blue-300 mb-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="font-semibold text-sm">Tips Hari Ini</span>
-                </div>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
-                  Gunakan fitur scan barcode untuk mempercepat proses transaksi. Pastikan stok selalu diperbarui untuk menghindari kehabisan produk.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
-              <ShoppingCart className="h-3 w-3 text-white" />
-            </div>
-            <span className="font-semibold text-slate-900 dark:text-white">Toko Azkia</span>
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Dipercaya oleh
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Ratusan Pelaku Bisnis</span>
+            </h2>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Sistem Kasir Modern • {new Date().getFullYear()} • Versi 1.0
-          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < testimonial.rating
+                            ? "text-yellow-400 fill-current"
+                            : "text-slate-300"
+                          }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 dark:text-slate-300 mb-4 italic">
+                    "{testimonial.comment}"
+                  </p>
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {testimonial.store}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-white/50 dark:bg-slate-800/50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Pilih Paket
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Sesuai Kebutuhan</span>
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              Tidak ada biaya tersembunyi. Upgrade atau downgrade kapan saja.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <Card key={index} className={`border-0 shadow-lg relative ${plan.popular
+                  ? "ring-2 ring-blue-500 scale-105"
+                  : "bg-white/80 dark:bg-slate-800/80"
+                } backdrop-blur-sm`}>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                      Paling Populer
+                    </div>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {plan.name}
+                  </CardTitle>
+                  <div className="flex items-baseline justify-center space-x-1 mt-2">
+                    <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                      {plan.price}
+                    </span>
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {plan.period}
+                    </span>
+                  </div>
+                  <CardDescription className="text-slate-600 dark:text-slate-400">
+                    {plan.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center space-x-3">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span className="text-slate-700 dark:text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className={`w-full ${plan.popular
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        : "bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
+                      } text-white`}
+                  >
+                    {plan.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Siap Mengubah Cara Anda Berbisnis?
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
+              Bergabung dengan ratusan toko yang sudah merasakan kemudahan Azkia POS. Tidak perlu kartu kredit untuk memulai.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-8 py-3 text-lg">
+                  Mulai Gratis Sekarang
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 px-8 py-3 text-lg">
+                Jadwalkan Demo
+              </Button>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-4">
+              Gratis selamanya untuk hingga 50 transaksi per hari
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm py-12">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-bold text-slate-900 dark:text-white">Azkia POS</span>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Sistem kasir modern untuk mengoptimalkan operasional toko Anda.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Produk</h3>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li><a href="#features" className="hover:text-blue-600 transition-colors">Fitur</a></li>
+                <li><a href="#pricing" className="hover:text-blue-600 transition-colors">Harga</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Integrasi</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">API</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Perusahaan</h3>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Tentang Kami</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Karir</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Kontak</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Support</h3>
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Bantuan</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Dokumentasi</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Community</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">Status</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 dark:border-slate-700 mt-8 pt-8 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              &copy; {new Date().getFullYear()} Azkia POS. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

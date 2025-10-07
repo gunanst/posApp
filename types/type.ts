@@ -52,6 +52,7 @@ export type TransactionType = {
     id: number;
     total: number;
     createdAt: Date;
+    paymentAmount?: number;
     items: {
         product: Product;
         quantity: number;
@@ -60,4 +61,33 @@ export type TransactionType = {
 
 export type CategoryFormProps = {
     defaultValues?: Partial<Category>;
+};
+
+export type User = {
+    id: number;
+    username: string;
+    email: string;
+    role: 'ADMIN' | 'KASIR';
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+export type LoginFormData = {
+    username: string;
+    password: string;
+};
+
+export type AuthUser = {
+    id: number;
+    username: string;
+    email: string;
+    role: 'ADMIN' | 'KASIR';
+};
+
+export type JWTPayload = {
+    userId: number;
+    username: string;
+    role: 'ADMIN' | 'KASIR';
+    iat?: number;
+    exp?: number;
 };

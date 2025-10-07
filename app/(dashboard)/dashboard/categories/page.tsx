@@ -2,6 +2,7 @@ import { getCategories } from "@/lib/actions/categoryAction"
 import { Category } from "@/types/type"
 import CategoryTable from "@/components/categories/CategoryTable"
 
+export const dynamic = 'force-dynamic';
 export default async function CategoryPage() {
     let ambilCategory: Category[] = []
     let error = null
@@ -21,3 +22,4 @@ export default async function CategoryPage() {
         </div>
     )
 }
+

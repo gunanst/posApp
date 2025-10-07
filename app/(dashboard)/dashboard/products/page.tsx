@@ -5,7 +5,7 @@ import { Product, Category } from "@/types/type";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
+export const dynamic = 'force-dynamic';
 export default async function ProductPage() {
     let products: Product[] = []
     let categories: Category[] = []

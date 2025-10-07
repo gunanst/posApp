@@ -1,5 +1,6 @@
 import { getProducts } from '@/lib/actions/transactionAction';
 import POS from '@/components/transaction/POS';
+export const dynamic = 'force-dynamic';
 
 export default async function TransactionPage() {
     const products = await getProducts();

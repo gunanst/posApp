@@ -1,6 +1,7 @@
 import { getTransactionHistory } from "@/lib/actions/transactionHistoryActions";
 import TransactionHistoryClient from "@/components/history/transactionHistoryClient"
 
+export const dynamic = 'force-dynamic';
 export default async function TransactionHistoryPage() {
     try {
         const transactions = await getTransactionHistory();

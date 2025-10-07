@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { getDashboardData } from "@/lib/actions/dashboardActions";
 import { getSystemStatus } from "@/lib/actions/systemStatusActions";
+export const dynamic = 'force-dynamic';
 
 function formatRupiah(num: number) {
     return "Rp " + num.toLocaleString("id-ID");

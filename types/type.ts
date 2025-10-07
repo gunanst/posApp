@@ -53,6 +53,7 @@ export type TransactionType = {
     total: number;
     createdAt: Date;
     paymentAmount?: number;
+    paymentMethod?: 'CASH' | 'QRIS' | 'DEBIT';
     items: {
         product: Product;
         quantity: number;

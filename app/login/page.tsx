@@ -20,21 +20,17 @@ export default function LoginPage() {
         setError('');
 
         try {
-            console.log('Form submission started...');
             const result = await loginUser(formData);
-            console.log('Login result:', result);
 
             if (result.success) {
-                console.log('Login successful, redirecting...');
                 router.push('/dashboard');
                 router.refresh();
             } else {
-                console.log('Login failed:', result.error);
                 setError(result.error || 'Login gagal');
             }
         } catch (err) {
             console.error('Login form error:', err);
-            setError(`Terjadi kesalahan: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            setError('Terjadi kesalahan sistem');
         } finally {
             setLoading(false);
         }
@@ -77,7 +73,6 @@ export default function LoginPage() {
                             required
                             className="w-full"
                             disabled={loading}
-                            defaultValue="admin" // Default value untuk testing
                         />
                     </div>
 
@@ -94,7 +89,6 @@ export default function LoginPage() {
                                 required
                                 className="w-full pr-10"
                                 disabled={loading}
-                                defaultValue="admin123" // Default value untuk testing
                             />
                             <button
                                 type="button"

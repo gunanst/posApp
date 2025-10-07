@@ -127,12 +127,12 @@ export default function LoginPage() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="text-left">
                             <p className="font-semibold">Admin:</p>
-                            <p>Username: admin</p>
+                            <p>Username: admin@mypos.com</p>
                             <p>Password: admin123</p>
                         </div>
                         <div className="text-left">
                             <p className="font-semibold">Kasir:</p>
-                            <p>Username: kasir</p>
+                            <p>Username: kasir@mypos.com</p>
                             <p>Password: kasir123</p>
                         </div>
                     </div>

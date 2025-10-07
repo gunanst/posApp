@@ -3,67 +3,106 @@
 
 import { cookies } from 'next/headers';
 
-export async function loginUser(formData: FormData) {
+export async function createUser(formData: FormData) {
     try {
         const username = formData.get('username') as string;
+        const email = formData.get('email') as string;
         const password = formData.get('password') as string;
+        const role = formData.get('role') as string;
 
-        console.log('Login attempt:', username);
+        console.log('Creating user:', { username, email, role });
 
-        if (!username || !password) {
-            return { success: false, error: 'Username dan password harus diisi' };
+        // Validasi input
+        if (!username || !email || !password || !role) {
+            return { success: false, error: 'Semua field harus diisi' };
         }
 
-        // MOCK DATA - tanpa database
-        const mockUsers = [
-            {
-                username: 'admin',
-                password: 'admin123',
-                role: 'ADMIN' as const,
-                email: 'admin@azkiapos.com',
-                id: '1'
-            },
-            {
-                username: 'kasir',
-                password: 'kasir123',
-                role: 'KASIR' as const,
-                email: 'kasir@azkiapos.com',
-                id: '2'
-            }
-        ];
-
-        const user = mockUsers.find(u => u.username === username && u.password === password);
-
-        if (!user) {
-            return { success: false, error: 'Username atau password salah' };
+        if (password.length < 6) {
+            return { success: false, error: 'Password minimal 6 karakter' };
         }
 
-        // Set user cookie
-        const userData = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role
+        // Untuk sementara, return mock response
+        // Nanti bisa diganti dengan Prisma ketika database ready
+        const newUser = {
+            id: Date.now().toString(),
+            username,
+            email,
+            role: role as 'ADMIN' | 'KASIR',
+            createdAt: new Date(),
+            updatedAt: new Date()
         };
 
-        const cookieStore = await cookies();
-        cookieStore.set('user', JSON.stringify(userData), {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24 // 1 day
-        });
+        console.log('User created successfully (mock):', newUser.username);
 
-        console.log('Login successful for:', username);
-        return { success: true, user: userData };
+        return {
+            success: true,
+            user: newUser,
+            message: 'User berhasil dibuat'
+        };
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Create user error:', error);
         return {
             success: false,
-            error: 'Terjadi kesalahan sistem saat login'
+            error: 'Terjadi kesalahan saat membuat user'
         };
     }
+}
+
+export async function updateUser(id: string, formData: FormData) {
+    try {
+        const username = formData.get('username') as string;
+        const email = formData.get('email') as string;
+        const role = formData.get('role') as string;
+
+        console.log('Updating user:', { id, username, email, role });
+
+        // Mock update response
+        const updatedUser = {
+            id,
+            username,
+            email,
+            role: role as 'ADMIN' | 'KASIR',
+            updatedAt: new Date()
+        };
+
+        console.log('User updated successfully (mock):', updatedUser.username);
+
+        return {
+            success: true,
+            user: updatedUser,
+            message: 'User berhasil diupdate'
+        };
+
+    } catch (error) {
+        console.error('Update user error:', error);
+        return {
+            success: false,
+            error: 'Terjadi kesalahan saat mengupdate user'
+        };
+    }
+}
+
+export async function deleteUser(id: string) {
+    try {
+        console.log('Deleting user:', id);
+
+        // Mock delete response
+        console.log('User deleted successfully (mock):', id);
+
+        return {
+            success: true,
+            message: 'User berhasil dihapus'
+        };
+
+    } catch (error) {
+        console.error('Delete user error:', error);
+        return {
+            success: false,
+            error: 'Terjadi kesalahan saat menghapus user'
+        };
+    }
+
 }
 
 export async function getCurrentUser() {

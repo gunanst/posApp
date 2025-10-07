@@ -1,5 +1,5 @@
-import prisma from './prisma';
-import { hashPassword } from './auth';
+import prisma from '@/lib/prisma';
+import { hashPassword } from '@/lib/auth';
 
 async function seed() {
     // Create admin user

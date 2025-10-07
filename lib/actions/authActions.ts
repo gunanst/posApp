@@ -1,133 +1,163 @@
-// lib/actions/authActions.ts
 'use server';
 
+import prisma from '@/lib/prisma';
+import { generateToken, verifyPassword, hashPassword, verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export async function createUser(formData: FormData) {
+export async function loginUser(formData: FormData) {
+    console.log('🔐 [SERVER] Login process started');
+
+    const username = formData.get('username') as string;
+    const password = formData.get('password') as string;
+
+    console.log('📥 [SERVER] Received:', { username, password: '***' });
+
     try {
-        const username = formData.get('username') as string;
-        const email = formData.get('email') as string;
-        const password = formData.get('password') as string;
-        const role = formData.get('role') as string;
+        // Cari user by username atau email
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email: username }
+                ]
+            }
+        });
 
-        console.log('Creating user:', { username, email, role });
+        console.log('👤 [SERVER] User found:', user ? 'Yes' : 'No');
 
-        // Validasi input
-        if (!username || !email || !password || !role) {
-            return { success: false, error: 'Semua field harus diisi' };
+        if (!user) {
+            console.log('❌ [SERVER] User not found');
+            return { success: false, error: 'Username atau password salah' };
         }
 
-        if (password.length < 6) {
-            return { success: false, error: 'Password minimal 6 karakter' };
+        // Verifikasi password
+        const isPasswordValid = verifyPassword(password, user.password);
+        console.log('🔑 [SERVER] Password valid:', isPasswordValid);
+
+        if (!isPasswordValid) {
+            return { success: false, error: 'Username atau password salah' };
         }
 
-        // Untuk sementara, return mock response
-        // Nanti bisa diganti dengan Prisma ketika database ready
-        const newUser = {
-            id: Date.now().toString(),
-            username,
-            email,
-            role: role as 'ADMIN' | 'KASIR',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
+        // Generate JWT token (await karena sekarang async)
+        const token = await generateToken({
+            userId: user.id,
+            username: user.username,
+            role: user.role as 'ADMIN' | 'KASIR'
+        });
 
-        console.log('User created successfully (mock):', newUser.username);
+        console.log('🎫 [SERVER] Token generated');
+
+        // Set cookie
+        const cookieStore = await cookies();
+        cookieStore.set('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7 // 7 days
+        });
+
+        console.log('✅ [SERVER] Login successful for user:', user.username);
 
         return {
             success: true,
-            user: newUser,
-            message: 'User berhasil dibuat'
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role as 'ADMIN' | 'KASIR'
+            }
         };
-
     } catch (error) {
-        console.error('Create user error:', error);
-        return {
-            success: false,
-            error: 'Terjadi kesalahan saat membuat user'
-        };
+        console.error('💥 [SERVER] Login error:', error);
+        return { success: false, error: 'Terjadi kesalahan saat login' };
     }
 }
 
-export async function updateUser(id: string, formData: FormData) {
-    try {
-        const username = formData.get('username') as string;
-        const email = formData.get('email') as string;
-        const role = formData.get('role') as string;
-
-        console.log('Updating user:', { id, username, email, role });
-
-        // Mock update response
-        const updatedUser = {
-            id,
-            username,
-            email,
-            role: role as 'ADMIN' | 'KASIR',
-            updatedAt: new Date()
-        };
-
-        console.log('User updated successfully (mock):', updatedUser.username);
-
-        return {
-            success: true,
-            user: updatedUser,
-            message: 'User berhasil diupdate'
-        };
-
-    } catch (error) {
-        console.error('Update user error:', error);
-        return {
-            success: false,
-            error: 'Terjadi kesalahan saat mengupdate user'
-        };
-    }
-}
-
-export async function deleteUser(id: string) {
-    try {
-        console.log('Deleting user:', id);
-
-        // Mock delete response
-        console.log('User deleted successfully (mock):', id);
-
-        return {
-            success: true,
-            message: 'User berhasil dihapus'
-        };
-
-    } catch (error) {
-        console.error('Delete user error:', error);
-        return {
-            success: false,
-            error: 'Terjadi kesalahan saat menghapus user'
-        };
-    }
-
+export async function logoutUser() {
+    const cookieStore = await cookies();
+    cookieStore.delete('token');
+    redirect('/login');
 }
 
 export async function getCurrentUser() {
     try {
         const cookieStore = await cookies();
-        const userCookie = cookieStore.get('user');
+        const token = cookieStore.get('token')?.value;
 
-        if (!userCookie) {
+        if (!token) {
             return null;
         }
 
-        return JSON.parse(userCookie.value);
+        const payload = await verifyToken(token);
+
+        if (!payload) {
+            return null;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        });
+
+        return user;
     } catch (error) {
         console.error('Get current user error:', error);
         return null;
     }
 }
 
-export async function logoutUser() {
+export async function createUser(formData: FormData) {
+    const username = formData.get('username') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const role = formData.get('role') as 'ADMIN' | 'KASIR';
+
     try {
-        const cookieStore = await cookies();
-        cookieStore.delete('user');
-        return { success: true };
+        // Check if user already exists
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
+
+        if (existingUser) {
+            return { success: false, error: 'Username atau email sudah digunakan' };
+        }
+
+        // Hash password
+        const hashedPassword = hashPassword(password);
+
+        // Create user
+        const user = await prisma.user.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword,
+                role
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true
+            }
+        });
+
+        return { success: true, user };
     } catch (error) {
-        console.error('Logout error:', error);
-        return { success: false };
+        console.error('Create user error:', error);
+        return { success: false, error: 'Gagal membuat user' };
     }
 }

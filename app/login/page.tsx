@@ -1,8 +1,8 @@
+// app/login/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,113 +11,139 @@ import { loginUser } from '@/lib/actions/authActions';
 
 export default function LoginPage() {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (formData: FormData) => {
-        setIsLoading(true);
+        setLoading(true);
         setError('');
 
         try {
+            console.log('Form submission started...');
             const result = await loginUser(formData);
+            console.log('Login result:', result);
 
             if (result.success) {
+                console.log('Login successful, redirecting...');
                 router.push('/dashboard');
                 router.refresh();
             } else {
+                console.log('Login failed:', result.error);
                 setError(result.error || 'Login gagal');
             }
         } catch (err) {
-            setError('Terjadi kesalahan saat login');
+            console.error('Login form error:', err);
+            setError(`Terjadi kesalahan: ${err instanceof Error ? err.message : 'Unknown error'}`);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
-            <Card className="w-full max-w-md border-0 shadow-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm">
-                <CardHeader className="space-y-1 text-center">
-                    <div className="flex justify-center mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <ShoppingCart className="h-8 w-8 text-white" />
-                        </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800 p-4">
+            <div className="max-w-md w-full space-y-8">
+                {/* Header */}
+                <div className="text-center">
+                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mb-4">
+                        <ShoppingCart className="w-8 h-8 text-white" />
                     </div>
-                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        TOKO AZKIA
-                    </CardTitle>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">
-                        Masuk ke sistem POS Anda
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Azkia POS
+                    </h1>
+                    <p className="text-slate-600 dark:text-slate-400 mt-2">
+                        Silakan login untuk mengakses sistem
                     </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+
+                {/* Login Form */}
+                <form action={handleSubmit} className="space-y-6 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
                     {error && (
-                        <div className="flex items-center gap-2 p-3 text-sm text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 rounded-lg">
-                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                            <span>{error}</span>
+                        <div className="flex items-center space-x-2 text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-sm">{error}</span>
                         </div>
                     )}
 
-                    <form action={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="username" className="text-slate-700 dark:text-slate-300">
-                                Username atau Email
-                            </Label>
-                            <Input
-                                id="username"
-                                name="username"
-                                type="text"
-                                placeholder="Masukkan username atau email"
-                                required
-                                className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
-                                Password
-                            </Label>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    name="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="Masukkan password"
-                                    required
-                                    className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 pr-10"
-                                    disabled={isLoading}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                    disabled={isLoading}
-                                >
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transition-all duration-300"
-                        >
-                            {isLoading ? 'Memproses...' : 'Masuk'}
-                        </Button>
-                    </form>
-
-                    <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-200 dark:border-slate-700">
-                        <p>Gunakan akun yang telah terdaftar</p>
-                        <p className="mt-1">
-                            Admin: akses penuh • Kasir: akses POS & transaksi
-                        </p>
+                    <div className="space-y-2">
+                        <Label htmlFor="username" className="text-sm font-medium">
+                            Username
+                        </Label>
+                        <Input
+                            id="username"
+                            name="username"
+                            type="text"
+                            placeholder="Masukkan username"
+                            required
+                            className="w-full"
+                            disabled={loading}
+                            defaultValue="admin" // Default value untuk testing
+                        />
                     </div>
-                </CardContent>
-            </Card>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="password" className="text-sm font-medium">
+                            Password
+                        </Label>
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Masukkan password"
+                                required
+                                className="w-full pr-10"
+                                disabled={loading}
+                                defaultValue="admin123" // Default value untuk testing
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                disabled={loading}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-4 h-4" />
+                                ) : (
+                                    <Eye className="w-4 h-4" />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Memproses...</span>
+                            </div>
+                        ) : (
+                            'Login'
+                        )}
+                    </Button>
+                </form>
+
+                {/* Demo Credentials */}
+                <div className="text-center text-sm text-slate-600 dark:text-slate-400 space-y-1 bg-white dark:bg-slate-800 p-4 rounded-lg">
+                    <p className="font-medium">Demo Credentials:</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-left">
+                            <p className="font-semibold">Admin:</p>
+                            <p>Username: admin</p>
+                            <p>Password: admin123</p>
+                        </div>
+                        <div className="text-left">
+                            <p className="font-semibold">Kasir:</p>
+                            <p>Username: kasir</p>
+                            <p>Password: kasir123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
-export const dynamic = 'force-dynamic';

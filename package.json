@@ -2,13 +2,19 @@
   "name": "posdasar",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint app/ components/ lib/ types/ --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint app/ components/ lib/ types/ --ext .js,.jsx,.ts,.tsx --fix",
-    "lint:all": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint:all": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "db:seed": "prisma db seed",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

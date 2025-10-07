@@ -87,7 +87,7 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  MyPOS
+                  TOKO AZKIA
                 </h1>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Sistem Kasir Toko</p>
               </div>
@@ -113,7 +113,7 @@ export default function Home() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Selamat Datang di MyPOS
+            Selamat Datang di Toko Azkia
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-lg">
             Sistem Point of Sale untuk mengelola transaksi dan inventori toko Anda
@@ -250,7 +250,7 @@ export default function Home() {
             <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
               <ShoppingCart className="h-3 w-3 text-white" />
             </div>
-            <span className="font-semibold text-slate-900 dark:text-white">MyPOS</span>
+            <span className="font-semibold text-slate-900 dark:text-white">Toko Azkia</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Sistem Kasir Modern • {new Date().getFullYear()} • Versi 1.0

@@ -90,37 +90,7 @@
   }
 }
 
-/* Print styles tetap putih */
-@media print {
-  .dark {
-    --background: white !important;
-    --foreground: black !important;
-    --card: white !important;
-    --card-foreground: black !important;
-  }
-}
-
-/* Base Styles */
-* {
-  border-color: var(--border);
-}
-
-*:focus {
-  outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
-}
-
-code,
-pre {
-  font-family: var(--font-geist-mono), 'Courier New', monospace;
-}
-
-/* Print Styles untuk Struk */
+/* app/globals.css - Tambahkan ini */
 @media print {
   @page {
     margin: 0;
@@ -140,13 +110,14 @@ pre {
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm;
+    width: 80mm !important;
+    max-width: 80mm !important;
     background: white !important;
     color: black !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
     font-family: 'Courier New', monospace !important;
     box-shadow: none !important;
-    border: none !important;
+    border: 1px solid #000 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -155,22 +126,23 @@ pre {
     display: none !important;
   }
 
-  /* Pastikan semua background putih */
+  /* Hilangkan semua background colors untuk print */
   * {
-    background: white !important;
+    background: transparent !important;
     color: black !important;
   }
 
-  /* Hilangkan gradient dan warna background */
-  .bg-gradient-to-r,
-  .bg-blue-600,
-  .bg-purple-600 {
-    background: white !important;
-    color: black !important;
-  }
-
-  /* Text color hitam untuk print */
+  /* Pastikan text tetap hitam */
   .text-white {
     color: black !important;
+  }
+
+  .bg-gradient-to-r {
+    background: white !important;
+  }
+
+  /* Border untuk print */
+  .border-gray-300 {
+    border-color: #000 !important;
   }
 }

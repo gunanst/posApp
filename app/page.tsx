@@ -147,7 +147,7 @@ export default function Home() {
                 <ShoppingCart className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Toko Azkia</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Toko Azka</h1>
                 <p className="text-sm text-gray-600">Kebutuhan Rumah Tangga Lengkap</p>
               </div>
             </div>
@@ -223,7 +223,7 @@ export default function Home() {
 
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 Menyediakan berbagai macam kebutuhan rumah tangga dengan kualitas terbaik dan harga terjangkau.
-                Dari bahan makanan hingga elektronik rumah tangga, semua ada di Toko Azkia.
+                Dari bahan makanan hingga elektronik rumah tangga, semua ada di Toko Azka.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -355,8 +355,8 @@ export default function Home() {
                         <Star
                           key={i}
                           className={`h-3 w-3 ${i < Math.floor(product.rating)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
                             }`}
                         />
                       ))}
@@ -397,7 +397,7 @@ export default function Home() {
               Kata Pelanggan
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Dengarkan pengalaman langsung dari pelanggan setia Toko Azkia
+              Dengarkan pengalaman langsung dari pelanggan setia Toko Azka
             </p>
           </div>
 
@@ -410,8 +410,8 @@ export default function Home() {
                       <Star
                         key={i}
                         className={`h-4 w-4 ${i < testimonial.rating
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300"
                           }`}
                       />
                     ))}
@@ -436,10 +436,10 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Tentang Toko Azkia
+                Tentang Toko Azka
               </h2>
               <p className="text-lg text-gray-600 mb-6">
-                Sejak tahun 2010, Toko Azkia telah menjadi pilihan terpercaya masyarakat
+                Sejak tahun 2021, Toko Azka telah menjadi pilihan terpercaya masyarakat
                 untuk memenuhi berbagai kebutuhan rumah tangga. Kami berkomitmen
                 menyediakan produk berkualitas dengan harga terjangkau.
               </p>
@@ -458,7 +458,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>Buka 24 jam untuk kenyamanan Anda</span>
+                  <span>Buka setiap hari untuk kenyamanan Anda</span>
                 </div>
               </div>
             </div>
@@ -490,7 +490,7 @@ export default function Home() {
                 <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-blue-600 rounded flex items-center justify-center">
                   <ShoppingCart className="h-4 w-4 text-white" />
                 </div>
-                <span className="font-bold text-lg">Toko Azkia</span>
+                <span className="font-bold text-lg">Toko Azka</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Menyediakan berbagai kebutuhan rumah tangga dengan kualitas terbaik sejak 2010.
@@ -510,7 +510,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center space-x-2">
                   <Clock className="h-4 w-4" />
-                  <span>Buka 24 Jam</span>
+                  <span>Buka Setiap Hari</span>
                 </li>
               </ul>
             </div>
@@ -543,9 +543,9 @@ export default function Home() {
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
             <p className="text-sm text-gray-400">
-              &copy; {new Date().getFullYear()} Toko Azkia. All rights reserved. |
+              &copy; {new Date().getFullYear()} Toko Azka. All rights reserved. |
               <Link href="/dashboard" className="ml-2 text-green-400 hover:text-green-300">
-                Admin POS
+                Admin Toko
               </Link>
             </p>
           </div>

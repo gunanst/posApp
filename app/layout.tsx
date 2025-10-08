@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TOKO AZKIA",
+  title: "Toko Azka",
   description: "Point of Sale System",
 };
 

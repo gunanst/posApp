@@ -96,7 +96,8 @@ export default function DashboardLayoutContent({ children, user }: DashboardLayo
             href: '/dashboard/reports',
             icon: <BarChart3Icon className="w-5 h-5" />,
             current: pathname === '/dashboard/reports',
-            badge: 'New',
+            badge: 'null',
+            // badge: 'new',
             roles: ['ADMIN', 'KASIR']
         }
     ];
@@ -188,7 +189,7 @@ export default function DashboardLayoutContent({ children, user }: DashboardLayo
                             </div>
                             <div>
                                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    TOKO AZKIA
+                                    Toko Azka
                                 </span>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     {user.role === 'ADMIN' ? 'Admin Panel' : 'Kasir Panel'}

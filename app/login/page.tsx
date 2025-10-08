@@ -45,7 +45,7 @@ export default function LoginPage() {
                         <ShoppingCart className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Azkia POS
+                        TOKO AZKA
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mt-2">
                         Silakan login untuk mengakses sistem
@@ -121,7 +121,7 @@ export default function LoginPage() {
                     </Button>
                 </form>
 
-                {/* Demo Credentials */}
+                {/* Demo Credentials
                 <div className="text-center text-sm text-slate-600 dark:text-slate-400 space-y-1 bg-white dark:bg-slate-800 p-4 rounded-lg">
                     <p className="font-medium">Demo Credentials:</p>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -136,7 +136,7 @@ export default function LoginPage() {
                             <p>Password: kasir123</p>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

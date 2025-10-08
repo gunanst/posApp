@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
-
 export default async function CategoryPage() {
     let categories: Category[] = [];
     let error: string | null = null;

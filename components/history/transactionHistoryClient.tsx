@@ -209,7 +209,7 @@ export default function TransactionHistoryClient({ transactions }: Props) {
                             Riwayat Transaksi
                         </h1>
                         <p className="text-slate-600 dark:text-slate-400 mt-2">
-                            Pantau dan analisis performa penjualan toko Anda
+                            Pantau dan analisis performa penjualan toko
                         </p>
                     </div>
                     <Button
@@ -288,8 +288,8 @@ export default function TransactionHistoryClient({ transactions }: Props) {
                                     onClick={() => setSelectedPeriod(period)}
                                     variant={selectedPeriod === period ? "default" : "outline"}
                                     className={`flex items-center gap-2 transition-all duration-200 ${selectedPeriod === period
-                                            ? "bg-blue-600 hover:bg-blue-700 shadow-md"
-                                            : "border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                        ? "bg-blue-600 hover:bg-blue-700 shadow-md"
+                                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
                                         }`}
                                 >
                                     <Calendar className="h-4 w-4" />

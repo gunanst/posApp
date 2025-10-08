@@ -7,7 +7,7 @@ export default async function TransactionPage() {
 
     return (
         <div className="p-4">
-            <h1 className="text-xl font-bold mb-4">Point of Sale</h1>
+            <h1 className="text-xl font-bold mb-4">Kasir</h1>
             <POS products={products} />
         </div>
     );

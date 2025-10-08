@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             roles: ['ADMIN', 'KASIR']
         },
         {
-            name: 'POS',
+            name: 'Kasir',
             href: '/dashboard/transaction',
             icon: <ShoppingCartIcon className="w-5 h-5" />,
             current: pathname === '/dashboard/transaction',
@@ -95,7 +95,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             href: '/dashboard/reports',
             icon: <BarChart3Icon className="w-5 h-5" />,
             current: pathname === '/dashboard/reports',
-            badge: 'New',
+            // badge: 'New',
+            badge: null,
             roles: ['ADMIN', 'KASIR']
         }
     ];
@@ -209,7 +210,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </div>
                             <div>
                                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    TOKO AZKIA
+                                    TOKO Azka
                                 </span>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     {getRoleText(user.role)}
@@ -383,7 +384,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <span className="hidden sm:inline">🔒 Secure & Reliable</span>
                         </div>
                         <div className="text-center sm:text-right">
-                            &copy; {new Date().getFullYear()} TOKO AZKIA.
+                            &copy; {new Date().getFullYear()} Toko Azka.
                             <span className="hidden md:inline"> Logged in as {user.username}</span>
                         </div>
                     </div>

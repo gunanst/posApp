@@ -20,7 +20,7 @@ export default function CategoryForm({ defaultValues }: CategoryFormProps) {
                     name="nama"
                     required
                     defaultValue={defaultValues?.nama || ""}
-                    placeholder="Contoh: Elektronik, Pakaian, Makanan"
+                    placeholder="Contoh: Minuman, Makanan"
                     className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     minLength={2}
                     maxLength={50}

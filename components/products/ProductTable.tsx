@@ -75,7 +75,7 @@ export default function ProductTable({
                         Daftar Produk
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
-                        Kelola inventory produk toko Anda
+                        Kelola inventory produk
                     </p>
                 </div>
                 <CreateProductDialog categories={categories} />
@@ -225,7 +225,7 @@ export default function ProductTable({
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <span className={`w-2 h-2 rounded-full ${(product.stok || 0) === 0 ? 'bg-red-500' :
-                                                        (product.stok || 0) <= 10 ? 'bg-orange-500' : 'bg-green-500'
+                                                    (product.stok || 0) <= 10 ? 'bg-orange-500' : 'bg-green-500'
                                                     }`} />
                                                 <span className="font-medium">{product.stok ?? 0}</span>
                                             </div>
@@ -342,7 +342,7 @@ export default function ProductTable({
                                                 <p className="text-slate-500 dark:text-slate-400">Stok</p>
                                                 <div className="flex items-center gap-2">
                                                     <span className={`w-2 h-2 rounded-full ${(product.stok || 0) === 0 ? 'bg-red-500' :
-                                                            (product.stok || 0) <= 10 ? 'bg-orange-500' : 'bg-green-500'
+                                                        (product.stok || 0) <= 10 ? 'bg-orange-500' : 'bg-green-500'
                                                         }`} />
                                                     <span className="font-semibold">{product.stok ?? 0}</span>
                                                 </div>

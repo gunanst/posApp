@@ -44,29 +44,29 @@ export function StrukDialog({ open, onOpenChange, struk }: StrukDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-2 border-gray-300 shadow-2xl mx-4 print:shadow-none print:border-0">
-                <DialogHeader className="p-4 pb-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white print:bg-white print:bg-none">
-                    <DialogTitle className="text-center text-white print:text-black">
+            <DialogContent className="w-[95vw] max-w-[320px] p-0 overflow-hidden bg-white border border-gray-200 shadow-xl mx-auto print:shadow-none print:border-0 print:max-w-[80mm]">
+                <DialogHeader className="p-3 pb-1 bg-gradient-to-r from-green-600 to-blue-600 text-white print:bg-white print:bg-none">
+                    <DialogTitle className="text-center text-white print:text-black text-sm font-bold">
                         STRUK TRANSAKSI
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="font-mono text-sm space-y-1 px-4 pb-4 bg-white print:bg-white">
-                    {/* Header Toko - Compact untuk mobile */}
-                    <div className="text-center mb-3 pt-2">
-                        <p className="font-bold text-base tracking-tight">TOKO AZKIA</p>
-                        <p className="text-[10px] text-gray-600 mt-1">Semua Ada Disini</p>
-                        <p className="text-[10px] text-gray-600">Jl. Merdeka No. 123, Cibubur</p>
-                        <p className="text-[10px] text-gray-600">Telp: 191919919191919</p>
+                <div className="font-mono text-[11px] space-y-0.5 px-3 pb-3 bg-white print:bg-white">
+                    {/* Header Toko - Super compact untuk mobile */}
+                    <div className="text-center mb-2 pt-1">
+                        <p className="font-bold text-sm tracking-tight">Toko Azka</p>
+                        <p className="text-[9px] text-gray-600 mt-0.5">Kebutuhan Rumah Tangga</p>
+                        <p className="text-[9px] text-gray-600">Jl. Merdeka No. 123, Cibubur</p>
+                        <p className="text-[9px] text-gray-600">Telp: 191919919191919</p>
                     </div>
 
-                    <div className="border-t border-dashed border-gray-400 my-2"></div>
+                    <div className="border-t border-dashed border-gray-300 my-1.5"></div>
 
-                    {/* Info Transaksi - Compact */}
-                    <div className="space-y-1 text-xs">
+                    {/* Info Transaksi - Ultra compact */}
+                    <div className="space-y-0.5 text-[10px]">
                         <div className="flex justify-between">
-                            <span className="text-gray-600">No. Transaksi:</span>
-                            <span className="font-bold">TRX-{struk.id.toString().padStart(6, '0')}</span>
+                            <span className="text-gray-600">No. TRX:</span>
+                            <span className="font-bold">#{struk.id.toString().padStart(6, '0')}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600">Tanggal:</span>
@@ -80,42 +80,52 @@ export function StrukDialog({ open, onOpenChange, struk }: StrukDialogProps) {
                             <span className="text-gray-600">Kasir:</span>
                             <span className="font-semibold">{user?.username || 'System'}</span>
                         </div>
+                        {struk.paymentMethod && (
+                            <div className="flex justify-between">
+                                <span className="text-gray-600">Metode:</span>
+                                <span className="font-semibold">
+                                    {struk.paymentMethod === 'CASH' && 'Cash'}
+                                    {struk.paymentMethod === 'QRIS' && 'QRIS'}
+                                    {struk.paymentMethod === 'DEBIT' && 'Debit'}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="border-t border-dashed border-gray-400 my-2"></div>
+                    <div className="border-t border-dashed border-gray-300 my-1.5"></div>
 
-                    {/* Daftar Item - Optimized untuk mobile */}
-                    <div className="space-y-2">
-                        <div className="text-center font-semibold text-xs uppercase tracking-wide text-gray-700 bg-gray-100 py-1 -mx-4 px-4">
-                            Daftar Belanja
+                    {/* Daftar Item - Super optimized untuk mobile */}
+                    <div className="space-y-1">
+                        <div className="text-center font-semibold text-[10px] uppercase tracking-wide text-gray-700 bg-gray-100 py-1 -mx-3 px-3">
+                            DAFTAR BELANJA
                         </div>
                         {struk.items.map((item, index) => (
-                            <div key={item.product.id} className="space-y-1 py-1">
+                            <div key={item.product.id} className="py-0.5">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex-1 min-w-0">
-                                        <span className="font-medium text-xs block truncate">
+                                    <div className="flex-1 min-w-0 pr-2">
+                                        <span className="font-medium text-[10px] block truncate leading-tight">
                                             {item.product.nama}
                                         </span>
-                                        <span className="text-[10px] text-gray-600 block">
-                                            {item.quantity} x Rp {item.product.harga.toLocaleString('id-ID')}
+                                        <span className="text-[9px] text-gray-600 block leading-tight">
+                                            {item.quantity} x @Rp {item.product.harga.toLocaleString('id-ID')}
                                         </span>
                                     </div>
-                                    <span className="font-semibold text-xs whitespace-nowrap ml-2">
+                                    <span className="font-semibold text-[10px] whitespace-nowrap leading-tight">
                                         Rp {(item.product.harga * item.quantity).toLocaleString('id-ID')}
                                     </span>
                                 </div>
                                 {index < struk.items.length - 1 && (
-                                    <div className="border-t border-dashed border-gray-200 mt-1"></div>
+                                    <div className="border-t border-dashed border-gray-200 mt-0.5"></div>
                                 )}
                             </div>
                         ))}
                     </div>
 
-                    <div className="border-t border-dashed border-gray-400 my-2"></div>
+                    <div className="border-t border-dashed border-gray-300 my-1.5"></div>
 
                     {/* Total Pembayaran */}
-                    <div className="space-y-2 bg-gray-50 -mx-4 px-4 py-3">
-                        <div className="flex justify-between text-sm font-bold">
+                    <div className="space-y-1 bg-gray-50 -mx-3 px-3 py-2">
+                        <div className="flex justify-between text-[11px] font-bold">
                             <span>TOTAL:</span>
                             <span>Rp {struk.total.toLocaleString('id-ID')}</span>
                         </div>
@@ -123,11 +133,11 @@ export function StrukDialog({ open, onOpenChange, struk }: StrukDialogProps) {
                         {/* Jika ada pembayaran dan kembalian */}
                         {struk.paymentAmount && (
                             <>
-                                <div className="flex justify-between text-xs">
+                                <div className="flex justify-between text-[10px]">
                                     <span className="text-gray-600">Bayar:</span>
                                     <span>Rp {struk.paymentAmount.toLocaleString('id-ID')}</span>
                                 </div>
-                                <div className="flex justify-between text-xs font-bold border-t border-dashed border-gray-300 pt-1">
+                                <div className="flex justify-between text-[10px] font-bold border-t border-dashed border-gray-300 pt-0.5">
                                     <span>Kembali:</span>
                                     <span className="text-green-600">
                                         Rp {(struk.paymentAmount - struk.total).toLocaleString('id-ID')}
@@ -137,44 +147,44 @@ export function StrukDialog({ open, onOpenChange, struk }: StrukDialogProps) {
                         )}
                     </div>
 
-                    <div className="border-t border-dashed border-gray-400 my-2"></div>
+                    <div className="border-t border-dashed border-gray-300 my-1.5"></div>
 
                     {/* Footer */}
-                    <div className="text-center space-y-2 py-2">
-                        <p className="text-[10px] italic text-gray-600 leading-tight">
-                            Barang yang sudah dibeli tidak dapat ditukar/dikembalikan
+                    <div className="text-center space-y-1 py-1">
+                        <p className="text-[9px] italic text-gray-600 leading-tight">
+                            Barang sudah dibeli tidak dapat ditukar/dikembalikan
                         </p>
-                        <p className="text-xs font-semibold text-gray-800">
+                        <p className="text-[10px] font-semibold text-gray-800">
                             Terima kasih atas kunjungan Anda!
                         </p>
-                        <p className="text-[10px] text-gray-500">
+                        <p className="text-[9px] text-gray-500">
                             {formatDateTime(new Date(struk.createdAt))}
                         </p>
                     </div>
 
-                    {/* Tombol Aksi - Hidden saat print */}
-                    <div className="flex justify-center gap-3 mt-4 pt-3 border-t border-gray-300 no-print">
+                    {/* Tombol Aksi - Compact untuk mobile */}
+                    <div className="flex justify-center gap-2 mt-3 pt-2 border-t border-gray-200 no-print">
                         <Button
                             size="sm"
                             variant="outline"
                             onClick={() => window.print()}
-                            className="text-xs bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                            className="text-[10px] h-7 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                         >
                             🖨️ Print
                         </Button>
                         <Button
                             size="sm"
                             onClick={() => onOpenChange(false)}
-                            className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                            className="text-[10px] h-7 px-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
                         >
                             Tutup
                         </Button>
                     </div>
 
                     {/* Watermark untuk print */}
-                    <div className="hidden print:block text-center mt-4">
+                    <div className="hidden print:block text-center mt-2">
                         <p className="text-[8px] text-gray-400">
-                            Dicetak dari Azkia POS - {formatDateTime(new Date())}
+                            Dicetak dari Toko Azka- {formatDateTime(new Date())}
                         </p>
                     </div>
                 </div>

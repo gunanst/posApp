@@ -398,7 +398,7 @@ export default async function DashboardPage() {
                             <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                                 <ShoppingCartIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
                                 <p>No transactions today</p>
-                                <p className="text-sm mt-1">Start selling to see transactions here</p>
+                                <p className="text-sm mt-1">Mulai jualan untuk melihat transaksi disini</p>
                             </div>
                         ) : (
                             data.recentTransactions.map((transaction) => (
